@@ -352,7 +352,7 @@ export default function Dashboard() {
                                                 {format(new Date(expense.date), 'MMM d, yyyy')}
                                             </p>
                                         </div>
-                                        <div className="font-semibold tabular-nums text-foreground bg-white px-3 py-1 rounded-md shadow-sm border border-gray-100">
+                                        <div className="font-semibold tabular-nums text-foreground bg-background px-3 py-1 rounded-md shadow-sm border border-border">
                                             ${expense.amount.toFixed(2)}
                                         </div>
                                     </div>

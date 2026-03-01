@@ -1,6 +1,7 @@
 import React from 'react'
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './lib/auth'
+import { ThemeProvider } from './lib/themeContext'
 
 import Dashboard from './pages/Dashboard'
 import DataEntry from './pages/DataEntry'
@@ -23,24 +24,26 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 function App() {
   return (
-    <HashRouter>
-      <Routes>
-        <Route path="/login" element={<Login />} />
+    <ThemeProvider>
+      <HashRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
 
-        <Route path="/" element={
-          <ProtectedRoute>
-            <Layout />
-          </ProtectedRoute>
-        }>
-          <Route index element={<Dashboard />} />
-          <Route path="log" element={<DataEntry />} />
-          <Route path="audit" element={<AuditLedger />} />
-          <Route path="tax-export" element={<TaxExport />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="migrate" element={<Migrate />} />
-        </Route>
-      </Routes>
-    </HashRouter>
+          <Route path="/" element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<Dashboard />} />
+            <Route path="log" element={<DataEntry />} />
+            <Route path="audit" element={<AuditLedger />} />
+            <Route path="tax-export" element={<TaxExport />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="migrate" element={<Migrate />} />
+          </Route>
+        </Routes>
+      </HashRouter>
+    </ThemeProvider>
   )
 }
 

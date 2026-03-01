@@ -88,6 +88,7 @@ export default function AuditLedger() {
 
     const filteredTransactions = useMemo(() => {
         if (selectedCategory === 'All') return transactions;
+        if (selectedCategory === 'ExpenseOnly') return transactions.filter(t => t.category !== 'Deposit' && t.category !== 'Mileage');
         return transactions.filter(t => t.category === selectedCategory);
     }, [transactions, selectedCategory]);
 
@@ -106,6 +107,7 @@ export default function AuditLedger() {
                         onChange={(e) => setSelectedCategory(e.target.value)}
                     >
                         <option value="All">All Categories</option>
+                        <option value="ExpenseOnly">All Expenses (Excl. Mileage)</option>
                         {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                     </select>
 

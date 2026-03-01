@@ -6,7 +6,7 @@ import type { Transaction } from '../lib/sheets';
 import { fetchTransactions } from '../lib/sheets';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Activity, DollarSign, Car, Briefcase, TrendingUp, Filter } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { format } from 'date-fns';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658'];
@@ -77,11 +77,22 @@ export default function Dashboard() {
         const expenseBreakdown: Record<string, number> = {};
         const individualExpenses: { name: string; amount: number; date: string }[] = [];
         const categoryTotals: Record<string, number> = {};
+        const rawMonthlyData: Record<string, { income: number, expense: number, name: string }> = {};
 
         transactions.forEach(t => {
             if (!t.date) return;
             const parts = t.date.split('-');
             if (parts.length < 2) return;
+
+            const monthKey = `${parts[0]}-${parts[1]}`;
+            if (!rawMonthlyData[monthKey]) {
+                const dateObj = new Date(Number(parts[0]), Number(parts[1]) - 1);
+                rawMonthlyData[monthKey] = {
+                    income: 0,
+                    expense: 0,
+                    name: isNaN(dateObj.getTime()) ? monthKey : format(dateObj, 'MMM yyyy')
+                };
+            }
 
             // Apply Filters
             if (selectedYear !== 'All' && parts[0] !== selectedYear) return;
@@ -95,11 +106,13 @@ export default function Dashboard() {
 
             if (t.category === 'Deposit') {
                 grossIncome += t.amount;
+                rawMonthlyData[monthKey].income += t.amount;
             } else if (t.category === 'Mileage') {
                 mileageMilesLogged += t.amount;
             } else {
                 totalOpEx += t.amount;
                 expenseBreakdown[t.category] = (expenseBreakdown[t.category] || 0) + t.amount;
+                rawMonthlyData[monthKey].expense += t.amount;
                 individualExpenses.push({
                     name: t.remarks || t.category,
                     amount: t.amount,
@@ -129,6 +142,11 @@ export default function Dashboard() {
             .map(([name, total]) => ({ name, total }))
             .sort((a, b) => b.total - a.total);
 
+        const monthlyTrend = Object.keys(rawMonthlyData)
+            .sort()
+            .map(k => rawMonthlyData[k])
+            .slice(-12); // Last 12 periods max
+
         return {
             grossIncome,
             totalExpenses: totalOpEx,
@@ -142,7 +160,8 @@ export default function Dashboard() {
             },
             pieData,
             topExpenses,
-            categoryTotalsList
+            categoryTotalsList,
+            monthlyTrend
         };
     }, [transactions, settings, selectedYear, selectedMonth, excludedCategories]);
 
@@ -177,8 +196,11 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+                <Card
+                    className="cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-200 border-l-4 border-l-emerald-500"
+                    onClick={(e) => jumpToLedger(e, 'Deposit')}
+                >
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Gross Income</CardTitle>
                         <DollarSign className="h-4 w-4 text-emerald-500" />
@@ -188,7 +210,10 @@ export default function Dashboard() {
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card
+                    className="cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-200 border-l-4 border-l-rose-500"
+                    onClick={(e) => jumpToLedger(e, 'ExpenseOnly')}
+                >
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
                         <Activity className="h-4 w-4 text-rose-500" />
@@ -201,7 +226,10 @@ export default function Dashboard() {
                     </CardContent>
                 </Card>
 
-                <Card className="bg-slate-900 border-none text-white shadow-md">
+                <Card
+                    className="cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-200 bg-slate-900 border-none text-white border-l-4 border-l-slate-400"
+                    onClick={(e) => jumpToLedger(e, 'All')}
+                >
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium text-slate-200">Net Income</CardTitle>
                         <Briefcase className="h-4 w-4 text-slate-400" />
@@ -213,7 +241,10 @@ export default function Dashboard() {
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card
+                    className="cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-200 border-l-4 border-l-blue-500"
+                    onClick={(e) => jumpToLedger(e, 'Mileage')}
+                >
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Mileage Info</CardTitle>
                         <Car className="h-4 w-4 text-blue-500" />
@@ -227,6 +258,40 @@ export default function Dashboard() {
                     </CardContent>
                 </Card>
             </div>
+
+            {metrics.monthlyTrend.length > 0 && (
+                <Card className="border shadow-sm mb-6">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <TrendingUp className="h-5 w-5 text-gray-500" />
+                            Income vs. Expenses Trend
+                        </CardTitle>
+                        <CardDescription>Monthly comparison of gross income and operating expenses</CardDescription>
+                    </CardHeader>
+                    <CardContent className="h-[300px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={metrics.monthlyTrend} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} />
+                                <YAxis
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fontSize: 12, fill: '#6B7280' }}
+                                    tickFormatter={(val) => `$${val.toLocaleString()}`}
+                                />
+                                <RechartsTooltip
+                                    formatter={(value: any) => `$${Number(value).toFixed(2)}`}
+                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                    cursor={{ fill: '#F3F4F6' }}
+                                />
+                                <Legend verticalAlign="top" height={36} iconType="circle" />
+                                <Bar dataKey="income" name="Income" fill="#10B981" radius={[4, 4, 0, 0]} barSize={32} />
+                                <Bar dataKey="expense" name="Expenses" fill="#F43F5E" radius={[4, 4, 0, 0]} barSize={32} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+            )}
 
             <div className="grid gap-6 lg:grid-cols-3 md:grid-cols-2">
                 <Card className="col-span-1 border shadow-sm">

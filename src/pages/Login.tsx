@@ -2,6 +2,7 @@ import { useAuth } from '../lib/auth';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Button } from '../components/ui/button';
+import videoUrl from '/Vintage_Document_Organization_Video.mp4';
 
 export default function Login() {
     const { login, user } = useAuth();
@@ -23,7 +24,7 @@ export default function Login() {
                 playsInline
                 className="absolute top-0 left-0 w-full h-full object-cover z-0 filter brightness-[0.3]"
             >
-                <source src="/Vintage_Document_Organization_Video.mp4" type="video/mp4" />
+                <source src={videoUrl} type="video/mp4" />
             </video>
 
             {/* Foreground Login Card */}

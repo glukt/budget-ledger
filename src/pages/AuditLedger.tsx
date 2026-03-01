@@ -2,13 +2,13 @@ import { useEffect, useState, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { useSettings } from '../lib/settingsContext';
-import { fetchTransactions, updateTransaction, deleteTransaction } from '../lib/sheets';
+import { fetchTransactions, updateTransaction, deleteTransaction, batchUpdateTransactions } from '../lib/sheets';
 import type { Transaction } from '../lib/sheets';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { format } from 'date-fns';
-import { FileEdit, Trash2, X } from 'lucide-react';
+import { FileEdit, Trash2, X, CheckSquare } from 'lucide-react';
 
 const CATEGORY_COLORS: Record<string, string> = {
     "Mileage": "border-l-blue-500",
@@ -21,7 +21,29 @@ const CATEGORY_COLORS: Record<string, string> = {
     "Meals": "border-l-red-400",
     "Lodging": "border-l-teal-500",
     "Fuel": "border-l-cyan-500",
-    "Other": "border-l-gray-500"
+    "Other": "border-l-gray-500",
+    "Uncategorized": "border-l-gray-300"
+};
+
+const FALLBACK_COLORS = [
+    "border-l-pink-500",
+    "border-l-lime-500",
+    "border-l-amber-500",
+    "border-l-fuchsia-500",
+    "border-l-sky-500",
+    "border-l-violet-500",
+    "border-l-rose-300",
+    "border-l-teal-300",
+    "border-l-yellow-300"
+];
+
+const getCategoryBorderColor = (category: string) => {
+    if (CATEGORY_COLORS[category]) return CATEGORY_COLORS[category];
+    let hash = 0;
+    for (let i = 0; i < category.length; i++) {
+        hash = category.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return FALLBACK_COLORS[Math.abs(hash) % FALLBACK_COLORS.length];
 };
 
 export default function AuditLedger() {
@@ -41,9 +63,11 @@ export default function AuditLedger() {
     const [filterMI, setFilterMI] = useState<boolean>(false);
     const [filterHome, setFilterHome] = useState<boolean>(false);
 
-    // Modal State
+    // Modal & Bulk State
     const [editingTx, setEditingTx] = useState<Transaction | null>(null);
     const [saving, setSaving] = useState(false);
+    const [selectedRows, setSelectedRows] = useState<number[]>([]);
+    const [bulkCategory, setBulkCategory] = useState<string>('');
 
     useEffect(() => {
         if (accessToken) {
@@ -101,6 +125,49 @@ export default function AuditLedger() {
         }
     };
 
+    const handleBulkAssign = async () => {
+        if (!accessToken || selectedRows.length === 0 || !bulkCategory) return;
+        setSaving(true);
+        try {
+            const txsToUpdate = transactions
+                .filter(t => t.rowNumber !== undefined && selectedRows.includes(t.rowNumber))
+                .map(t => ({ ...t, category: bulkCategory }));
+
+            await batchUpdateTransactions(accessToken, txsToUpdate);
+
+            setSelectedRows([]);
+            setBulkCategory('');
+            await loadData();
+        } catch (err: any) {
+            alert("Bulk update failed: " + err.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const toggleRow = (rowNumber: number | undefined) => {
+        if (!rowNumber) return;
+        setSelectedRows(prev =>
+            prev.includes(rowNumber)
+                ? prev.filter(r => r !== rowNumber)
+                : [...prev, rowNumber]
+        );
+    };
+
+    const toggleAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const visibleRowNumbers = filteredTransactions
+            .map(t => t.rowNumber)
+            .filter((r): r is number => r !== undefined);
+
+        if (e.target.checked) {
+            const newSet = new Set([...selectedRows, ...visibleRowNumbers]);
+            setSelectedRows(Array.from(newSet));
+        } else {
+            const visibleSet = new Set(visibleRowNumbers);
+            setSelectedRows(selectedRows.filter(r => !visibleSet.has(r)));
+        }
+    };
+
     const filteredTransactions = useMemo(() => {
         return transactions.filter(t => {
             // Category Filter
@@ -119,6 +186,9 @@ export default function AuditLedger() {
         });
     }, [transactions, selectedCategory, startDate, endDate, filterMI, filterHome]);
 
+    const allVisibleSelected = filteredTransactions.length > 0 &&
+        filteredTransactions.every(t => t.rowNumber !== undefined && selectedRows.includes(t.rowNumber));
+
     return (
         <div className="space-y-6 relative">
             <div className="flex items-center justify-between">
@@ -135,6 +205,7 @@ export default function AuditLedger() {
                     >
                         <option value="All">All Categories</option>
                         <option value="ExpenseOnly">All Expenses (Excl. Mileage)</option>
+                        <option value="Uncategorized">Uncategorized</option>
                         {settings.categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                     </select>
 
@@ -190,16 +261,46 @@ export default function AuditLedger() {
             </div>
 
             <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Transaction History</CardTitle>
                 </CardHeader>
                 <CardContent>
                     {error && <div className="text-red-500 mb-4">{error}</div>}
 
+                    {selectedRows.length > 0 && (
+                        <div className="bg-accent/50 text-accent-foreground px-4 py-3 mb-4 rounded-lg flex items-center gap-4 border border-border">
+                            <CheckSquare className="h-5 w-5 text-blue-500" />
+                            <span className="text-sm font-semibold">{selectedRows.length} selected</span>
+                            <select
+                                className="rounded-md border border-input bg-background px-3 py-1.5 text-sm focus:ring-2 focus:ring-ring"
+                                value={bulkCategory}
+                                onChange={(e) => setBulkCategory(e.target.value)}
+                            >
+                                <option value="">Assign New Category...</option>
+                                <option value="Uncategorized">Uncategorized</option>
+                                {settings.categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                            </select>
+                            <Button size="sm" onClick={handleBulkAssign} disabled={!bulkCategory || saving}>
+                                {saving ? "Updating..." : "Apply Category"}
+                            </Button>
+                            <button onClick={() => setSelectedRows([])} className="ml-auto text-sm text-muted-foreground hover:underline">
+                                Clear Selection
+                            </button>
+                        </div>
+                    )}
+
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
                             <thead className="text-xs text-muted-foreground uppercase bg-muted border-b">
                                 <tr>
+                                    <th className="px-4 py-3 w-10">
+                                        <input
+                                            type="checkbox"
+                                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4 bg-background"
+                                            checked={allVisibleSelected}
+                                            onChange={toggleAll}
+                                        />
+                                    </th>
                                     <th className="px-4 py-3">Date</th>
                                     <th className="px-4 py-3">Category</th>
                                     <th className="px-4 py-3 text-right">Amount / Miles</th>
@@ -211,16 +312,24 @@ export default function AuditLedger() {
                             <tbody>
                                 {filteredTransactions.length === 0 && !loading && (
                                     <tr>
-                                        <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                                            No transactions found for the selected category.
+                                        <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                                            No transactions found matching the selected filters.
                                         </td>
                                     </tr>
                                 )}
                                 {filteredTransactions.map((t, idx) => (
                                     <tr
                                         key={idx}
-                                        className={`bg-background border-b hover:bg-muted transition-colors border-l-4 ${CATEGORY_COLORS[t.category] || "border-l-transparent"}`}
+                                        className={`bg-background border-b hover:bg-muted transition-colors border-l-4 ${getCategoryBorderColor(t.category)}`}
                                     >
+                                        <td className="px-4 py-3">
+                                            <input
+                                                type="checkbox"
+                                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4 bg-background"
+                                                checked={t.rowNumber !== undefined && selectedRows.includes(t.rowNumber)}
+                                                onChange={() => toggleRow(t.rowNumber)}
+                                            />
+                                        </td>
                                         <td className="px-4 py-3 whitespace-nowrap">
                                             {t.date && !isNaN(new Date(t.date).getTime()) ? format(new Date(t.date), 'MMM d, yyyy') : (t.date || "Unknown Date")}
                                         </td>

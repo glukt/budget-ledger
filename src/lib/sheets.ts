@@ -186,6 +186,48 @@ export async function updateTransaction(accessToken: string, rowNumber: number, 
 }
 
 /**
+ * Updates multiple existing transactions in the Google Sheet simultaneously via batchUpdate
+ */
+export async function batchUpdateTransactions(accessToken: string, transactions: Transaction[]) {
+    if (!SPREADSHEET_ID) {
+        throw new Error("Spreadsheet ID not configured.");
+    }
+
+    const data = transactions.map(t => ({
+        range: `Raw Data!A${t.rowNumber}:F${t.rowNumber}`,
+        values: [[
+            t.date,
+            t.amount.toString(),
+            t.category,
+            t.isHomePay ? "TRUE" : "FALSE",
+            t.isMichiganPay ? "TRUE" : "FALSE",
+            t.remarks,
+        ]]
+    }));
+
+    const response = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values:batchUpdate`,
+        {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                valueInputOption: "USER_ENTERED",
+                data: data,
+            }),
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Error batch updating transactions: ${response.statusText}`);
+    }
+
+    return await response.json();
+}
+
+/**
  * Deletes a transaction from the Google Sheet by clearing its row
  */
 export async function deleteTransaction(accessToken: string, rowNumber: number) {

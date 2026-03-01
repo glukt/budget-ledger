@@ -45,7 +45,7 @@ export default function Dashboard() {
         // Prevent event bubbling if necessary
         e.preventDefault();
         e.stopPropagation();
-        navigate('/ledger', { state: { filterCategory: cat } });
+        navigate('/audit', { state: { filterCategory: cat } });
     };
 
     useEffect(() => {
@@ -236,28 +236,30 @@ export default function Dashboard() {
                     </CardHeader>
                     <CardContent className="h-[320px]">
                         {metrics.pieData.length > 0 ? (
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={metrics.pieData}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={60}
-                                        outerRadius={90}
-                                        paddingAngle={2}
-                                        dataKey="value"
-                                    >
-                                        {metrics.pieData.map((_, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                        ))}
-                                    </Pie>
-                                    <RechartsTooltip
-                                        formatter={(value: any) => `$${Number(value).toFixed(2)}`}
-                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                    />
-                                    <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                                </PieChart>
-                            </ResponsiveContainer>
+                            <div className="w-full h-full min-h-[250px] min-w-[250px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie
+                                            data={metrics.pieData}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={60}
+                                            outerRadius={90}
+                                            paddingAngle={2}
+                                            dataKey="value"
+                                        >
+                                            {metrics.pieData.map((_, index) => (
+                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            ))}
+                                        </Pie>
+                                        <RechartsTooltip
+                                            formatter={(value: any) => `$${Number(value).toFixed(2)}`}
+                                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                        />
+                                        <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </div>
                         ) : (
                             <div className="flex h-full items-center justify-center text-sm text-muted-foreground">No data for selected period.</div>
                         )}

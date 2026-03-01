@@ -1,6 +1,6 @@
 
 import { Outlet, NavLink } from 'react-router-dom';
-import { LayoutDashboard, PlusCircle, Search, LogOut, FileDown } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, Search, LogOut, FileDown, Settings as SettingsIcon } from 'lucide-react';
 import { useAuth } from '../lib/auth';
 
 export default function Layout() {
@@ -11,6 +11,8 @@ export default function Layout() {
         { to: "/log", icon: PlusCircle, label: "Log Expense" },
         { to: "/audit", icon: Search, label: "Audit" },
         { to: "/tax-export", icon: FileDown, label: "Tax Export" },
+        { to: "/settings", icon: SettingsIcon, label: "Settings" },
+        { to: "/migrate", icon: PlusCircle, label: "Migrate Data" },
     ];
 
     return (
@@ -18,7 +20,7 @@ export default function Layout() {
             {/* Sidebar / Bottom Nav */}
             <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 border-t bg-white sm:static sm:h-screen sm:w-64 sm:flex-col sm:border-r sm:border-t-0 p-2 sm:p-4">
                 <div className="hidden sm:block mb-8 px-4 py-2">
-                    <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Str8 Ledger</h1>
+                    <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Budget Ledger</h1>
                     {user && <p className="text-xs text-gray-500 truncate mt-1">{user.email}</p>}
                 </div>
 

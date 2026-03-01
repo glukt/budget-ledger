@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../lib/auth';
+import { useSettings } from '../lib/settingsContext';
 import type { Transaction } from '../lib/sheets';
 import { fetchTransactions } from '../lib/sheets';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -10,6 +11,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'
 
 export default function Dashboard() {
     const { accessToken } = useAuth();
+    const { settings } = useSettings();
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -42,8 +44,8 @@ export default function Dashboard() {
             }
         });
 
-        const mileageReimbursement = mileageMilesLogged * 0.55;
-        const mileageTaxDeductible = mileageMilesLogged * 0.15;
+        const mileageReimbursement = mileageMilesLogged * settings.mileageReimbursementRate;
+        const mileageTaxDeductible = mileageMilesLogged * settings.mileageTaxDeductionRate;
         const comprehensiveOpEx = totalOpEx + mileageReimbursement;
 
         const pieData = Object.entries(expenseBreakdown)
@@ -61,7 +63,7 @@ export default function Dashboard() {
             },
             pieData
         };
-    }, [transactions]);
+    }, [transactions, settings]);
 
     if (loading) return <div className="p-8 text-center text-gray-500">Loading metrics...</div>;
 

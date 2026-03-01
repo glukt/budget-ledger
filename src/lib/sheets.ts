@@ -14,6 +14,11 @@ export interface Transaction {
     remarks: string;
 }
 
+export interface Settings {
+    mileageReimbursementRate: number;
+    mileageTaxDeductionRate: number;
+}
+
 /**
  * Fetches the raw transactions from the Google Sheet
  */
@@ -84,6 +89,83 @@ export async function appendTransaction(accessToken: string, transaction: Transa
 
     if (!response.ok) {
         throw new Error(`Error appending transaction: ${response.statusText}`);
+    }
+
+    return await response.json();
+}
+
+/**
+ * Fetches the user settings from the Settings tab
+ */
+export async function fetchSettings(accessToken: string): Promise<Settings> {
+    if (!SPREADSHEET_ID) {
+        throw new Error("Spreadsheet ID not configured.");
+    }
+
+    const response = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SETTINGS_RANGE}`,
+        {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                Accept: "application/json",
+            },
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Error fetching settings: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const rows = data.values || [];
+
+    // Default fallback values if sheet is empty or missing
+    const settings: Settings = {
+        mileageReimbursementRate: 0.55,
+        mileageTaxDeductionRate: 0.15,
+    };
+
+    // Parse Key-Value pairs from the Settings!A:B tab
+    rows.forEach((row: any[]) => {
+        const key = row[0];
+        const val = parseFloat(row[1]);
+        if (key === 'MileageReimbursementRate' && !isNaN(val)) settings.mileageReimbursementRate = val;
+        if (key === 'MileageTaxDeductionRate' && !isNaN(val)) settings.mileageTaxDeductionRate = val;
+    });
+
+    return settings;
+}
+
+/**
+ * Updates the configurations by overwriting the Settings!A:B tab
+ */
+export async function updateSettings(accessToken: string, settings: Settings) {
+    if (!SPREADSHEET_ID) {
+        throw new Error("Spreadsheet ID not configured.");
+    }
+
+    // Convert settings object to a 2D array for Google Sheets
+    const values = [
+        ['MileageReimbursementRate', settings.mileageReimbursementRate],
+        ['MileageTaxDeductionRate', settings.mileageTaxDeductionRate]
+    ];
+
+    const response = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SETTINGS_RANGE}?valueInputOption=USER_ENTERED`,
+        {
+            method: "PUT",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                values: values,
+            }),
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Error updating settings: ${response.statusText}`);
     }
 
     return await response.json();

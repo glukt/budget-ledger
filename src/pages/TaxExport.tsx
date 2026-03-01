@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../lib/auth';
+import { useSettings } from '../lib/settingsContext';
 import { fetchTransactions } from '../lib/sheets';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -7,6 +8,7 @@ import { FileDown } from 'lucide-react';
 
 export default function TaxExport() {
     const { accessToken } = useAuth();
+    const { settings } = useSettings();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [year, setYear] = useState<number>(new Date().getFullYear());
@@ -50,8 +52,8 @@ export default function TaxExport() {
                 }
             });
 
-            const mileageReimbursement = Math.round((mileageMilesLogged * 0.55) * 100) / 100;
-            const mileageTaxDeductible = Math.round((mileageMilesLogged * 0.15) * 100) / 100;
+            const mileageReimbursement = Math.round((mileageMilesLogged * settings.mileageReimbursementRate) * 100) / 100;
+            const mileageTaxDeductible = Math.round((mileageMilesLogged * settings.mileageTaxDeductionRate) * 100) / 100;
 
             // Generate CPA Summary CSV
             const summaryRows = [
@@ -71,8 +73,8 @@ export default function TaxExport() {
             summaryRows.push(["", ""]);
             summaryRows.push(["MILEAGE & DEDUCTIONS"]);
             summaryRows.push(["Total Miles Driven", mileageMilesLogged.toString()]);
-            summaryRows.push(["Standard Reimbursed Mileage Value ($0.55/mi)", mileageReimbursement.toFixed(2)]);
-            summaryRows.push(["IRS Tax Deductible Mileage Value ($0.15/mi)", mileageTaxDeductible.toFixed(2)]);
+            summaryRows.push([`Standard Reimbursed Mileage Value ($${settings.mileageReimbursementRate}/mi)`, mileageReimbursement.toFixed(2)]);
+            summaryRows.push([`IRS Tax Deductible Mileage Value ($${settings.mileageTaxDeductionRate}/mi)`, mileageTaxDeductible.toFixed(2)]);
 
             const csvContent = summaryRows.map(e => e.join(",")).join("\n");
 

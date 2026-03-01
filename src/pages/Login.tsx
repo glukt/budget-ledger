@@ -18,7 +18,7 @@ export default function Login() {
         <div className="flex h-screen w-full items-center justify-center bg-gray-50 px-4">
             <Card className="w-full max-w-sm">
                 <CardHeader className="text-center">
-                    <CardTitle className="text-2xl font-bold">Financial Ledger</CardTitle>
+                    <CardTitle className="text-2xl font-bold">Budget Ledger</CardTitle>
                     <CardDescription>Sign in to securely access your data</CardDescription>
                 </CardHeader>
                 <CardContent className="flex justify-center flex-col gap-4">

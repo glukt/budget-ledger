@@ -9,6 +9,7 @@ import TaxExport from './pages/TaxExport'
 import Login from './pages/Login'
 import Layout from './components/Layout'
 import Migrate from './pages/Migrate'
+import Settings from './pages/Settings'
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -35,6 +36,7 @@ function App() {
           <Route path="log" element={<DataEntry />} />
           <Route path="audit" element={<AuditLedger />} />
           <Route path="tax-export" element={<TaxExport />} />
+          <Route path="settings" element={<Settings />} />
           <Route path="migrate" element={<Migrate />} />
         </Route>
       </Routes>

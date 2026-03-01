@@ -379,10 +379,10 @@ export default function Dashboard() {
                             {metrics.categoryTotalsList.map((cat, i) => (
                                 <div
                                     key={i}
-                                    className="flex items-center justify-between p-2 rounded-lg bg-gray-50/50 border border-gray-100 transition-colors hover:bg-gray-50 cursor-pointer"
+                                    className={`flex items-center justify-between p-2 rounded-lg bg-gray-50/50 border transition-colors hover:bg-gray-50 cursor-pointer ${settings.categories.includes(cat.name) ? 'border-gray-100' : 'border-red-200 bg-red-50/30'}`}
                                     onClick={(e) => jumpToLedger(e, cat.name)}
                                     onContextMenu={(e) => jumpToLedger(e, cat.name)}
-                                    title={`Click or Right-Click to view all ${cat.name} transactions`}
+                                    title={!settings.categories.includes(cat.name) ? `Click or Right-Click to view all ${cat.name} transactions. (Note: This custom transaction category is not currently present in your active Category List Settings)` : `Click or Right-Click to view all ${cat.name} transactions`}
                                 >
                                     <div className="flex items-center gap-3">
                                         <input

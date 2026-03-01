@@ -1,27 +1,15 @@
 import { useState } from 'react';
 import { useAuth } from '../lib/auth';
+import { useSettings } from '../lib/settingsContext';
 import { appendTransaction } from '../lib/sheets';
 import type { Transaction } from '../lib/sheets';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 
-const CATEGORIES = [
-    "Mileage",
-    "Deposit",
-    "Internet",
-    "Power",
-    "Phone",
-    "Liability Insurance",
-    "Tools/Supplies",
-    "Meals",
-    "Lodging",
-    "Fuel",
-    "Other"
-];
-
 export default function DataEntry() {
     const { accessToken } = useAuth();
+    const { settings } = useSettings();
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -110,7 +98,7 @@ export default function DataEntry() {
                                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                 required
                             >
-                                {CATEGORIES.map((cat) => (
+                                {settings.categories.map((cat) => (
                                     <option key={cat} value={cat}>
                                         {cat}
                                     </option>

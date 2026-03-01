@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
+import { useSettings } from '../lib/settingsContext';
 import { fetchTransactions, updateTransaction, deleteTransaction } from '../lib/sheets';
 import type { Transaction } from '../lib/sheets';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -8,11 +9,6 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { format } from 'date-fns';
 import { FileEdit, Trash2, X } from 'lucide-react';
-
-const CATEGORIES = [
-    "Mileage", "Deposit", "Internet", "Power", "Phone",
-    "Liability Insurance", "Tools/Supplies", "Meals", "Lodging", "Fuel", "Other"
-];
 
 const CATEGORY_COLORS: Record<string, string> = {
     "Mileage": "border-l-blue-500",
@@ -30,6 +26,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export default function AuditLedger() {
     const { accessToken } = useAuth();
+    const { settings } = useSettings();
     const location = useLocation();
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState(true);
@@ -138,7 +135,7 @@ export default function AuditLedger() {
                     >
                         <option value="All">All Categories</option>
                         <option value="ExpenseOnly">All Expenses (Excl. Mileage)</option>
-                        {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                        {settings.categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                     </select>
 
                     <div className="flex items-center gap-2">
@@ -305,7 +302,7 @@ export default function AuditLedger() {
                                         required
                                     >
                                         <option value="Uncategorized">Uncategorized</option>
-                                        {CATEGORIES.map((cat) => (
+                                        {settings.categories.map((cat) => (
                                             <option key={cat} value={cat}>
                                                 {cat}
                                             </option>

@@ -18,6 +18,7 @@ export interface Transaction {
 export interface Settings {
     mileageReimbursementRate: number;
     mileageTaxDeductionRate: number;
+    categories: string[];
 }
 
 /**
@@ -188,14 +189,24 @@ export async function fetchSettings(accessToken: string): Promise<Settings> {
     const settings: Settings = {
         mileageReimbursementRate: 0.55,
         mileageTaxDeductionRate: 0.15,
+        categories: [
+            "Mileage", "Deposit", "Internet", "Power", "Phone",
+            "Liability Insurance", "Tools/Supplies", "Meals", "Lodging", "Fuel", "Other"
+        ]
     };
 
     // Parse Key-Value pairs from the Settings!A:B tab
     rows.forEach((row: any[]) => {
         const key = row[0];
-        const val = parseFloat(row[1]);
-        if (key === 'MileageReimbursementRate' && !isNaN(val)) settings.mileageReimbursementRate = val;
-        if (key === 'MileageTaxDeductionRate' && !isNaN(val)) settings.mileageTaxDeductionRate = val;
+        const val = row[1];
+        if (!key || val === undefined) return;
+
+        if (key === 'MileageReimbursementRate') settings.mileageReimbursementRate = parseFloat(val) || 0;
+        if (key === 'MileageTaxDeductionRate') settings.mileageTaxDeductionRate = parseFloat(val) || 0;
+        if (key === 'Categories') {
+            // Split the comma-separated string back into an array, removing empty spaces
+            settings.categories = val.split(',').map((c: string) => c.trim()).filter(Boolean);
+        }
     });
 
     return settings;
@@ -212,7 +223,8 @@ export async function updateSettings(accessToken: string, settings: Settings) {
     // Convert settings object to a 2D array for Google Sheets
     const values = [
         ['MileageReimbursementRate', settings.mileageReimbursementRate],
-        ['MileageTaxDeductionRate', settings.mileageTaxDeductionRate]
+        ['MileageTaxDeductionRate', settings.mileageTaxDeductionRate],
+        ['Categories', settings.categories.join(', ')]
     ];
 
     const response = await fetch(

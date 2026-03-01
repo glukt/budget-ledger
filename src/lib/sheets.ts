@@ -98,6 +98,44 @@ export async function appendTransaction(accessToken: string, transaction: Transa
 }
 
 /**
+ * Appends multiple transactions to the Google Sheet simultaneously
+ */
+export async function appendTransactions(accessToken: string, transactions: Transaction[]) {
+    if (!SPREADSHEET_ID) {
+        throw new Error("Spreadsheet ID not configured.");
+    }
+
+    const rowDataArray = transactions.map(transaction => [
+        transaction.date,
+        transaction.amount.toString(),
+        transaction.category,
+        transaction.isHomePay ? "TRUE" : "FALSE",
+        transaction.isMichiganPay ? "TRUE" : "FALSE",
+        transaction.remarks,
+    ]);
+
+    const response = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RAW_LOG_RANGE}:append?valueInputOption=USER_ENTERED`,
+        {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                values: rowDataArray,
+            }),
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Error appending multiple transactions: ${response.statusText}`);
+    }
+
+    return await response.json();
+}
+
+/**
  * Updates an existing transaction in the Google Sheet by its row number
  */
 export async function updateTransaction(accessToken: string, rowNumber: number, transaction: Transaction) {

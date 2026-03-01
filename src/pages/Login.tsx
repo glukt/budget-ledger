@@ -1,9 +1,18 @@
 import { useAuth } from '../lib/auth';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 
 export default function Login() {
-    const { login } = useAuth();
+    const { login, user } = useAuth();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (user) {
+            navigate('/', { replace: true });
+        }
+    }, [user, navigate]);
 
     return (
         <div className="flex h-screen w-full items-center justify-center bg-gray-50 px-4">

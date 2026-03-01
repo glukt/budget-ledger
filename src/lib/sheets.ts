@@ -18,7 +18,7 @@ export interface Transaction {
  * Fetches the raw transactions from the Google Sheet
  */
 export async function fetchTransactions(accessToken: string): Promise<Transaction[]> {
-    if (!SPREADSHEET_ID || SPREADSHEET_ID === "YOUR_SPREADSHEET_ID_HERE") {
+    if (!SPREADSHEET_ID) {
         console.warn("Spreadsheet ID not configured.");
         return [];
     }
@@ -55,7 +55,7 @@ export async function fetchTransactions(accessToken: string): Promise<Transactio
  * Appends a new transaction to the Google Sheet
  */
 export async function appendTransaction(accessToken: string, transaction: Transaction) {
-    if (!SPREADSHEET_ID || SPREADSHEET_ID === "YOUR_SPREADSHEET_ID_HERE") {
+    if (!SPREADSHEET_ID) {
         throw new Error("Spreadsheet ID not configured.");
     }
 

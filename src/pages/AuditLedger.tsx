@@ -23,7 +23,11 @@ export default function AuditLedger() {
         try {
             const data = await fetchTransactions(accessToken!);
             // Sort newest first
-            data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+            data.sort((a, b) => {
+                const timeA = new Date(a.date).getTime();
+                const timeB = new Date(b.date).getTime();
+                return (isNaN(timeB) ? 0 : timeB) - (isNaN(timeA) ? 0 : timeA);
+            });
             setTransactions(data);
         } catch (err: any) {
             setError("Failed to load transactions. Check your connection or Spreadsheet ID.");
@@ -77,7 +81,7 @@ export default function AuditLedger() {
                                 {transactions.map((t, idx) => (
                                     <tr key={idx} className="bg-white border-b hover:bg-gray-50">
                                         <td className="px-4 py-3 whitespace-nowrap">
-                                            {t.date ? format(new Date(t.date), 'MMM d, yyyy') : "Invalid Date"}
+                                            {t.date && !isNaN(new Date(t.date).getTime()) ? format(new Date(t.date), 'MMM d, yyyy') : (t.date || "Unknown Date")}
                                         </td>
                                         <td className="px-4 py-3 font-medium text-gray-900">
                                             {t.category}

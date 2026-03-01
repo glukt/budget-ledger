@@ -1,5 +1,5 @@
 import React from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './lib/auth'
 
 import Dashboard from './pages/Dashboard'
@@ -8,6 +8,7 @@ import AuditLedger from './pages/AuditLedger'
 import TaxExport from './pages/TaxExport'
 import Login from './pages/Login'
 import Layout from './components/Layout'
+import Migrate from './pages/Migrate'
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -21,7 +22,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
 
@@ -34,9 +35,10 @@ function App() {
           <Route path="log" element={<DataEntry />} />
           <Route path="audit" element={<AuditLedger />} />
           <Route path="tax-export" element={<TaxExport />} />
+          <Route path="migrate" element={<Migrate />} />
         </Route>
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   )
 }
 

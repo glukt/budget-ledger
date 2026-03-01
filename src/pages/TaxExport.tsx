@@ -22,7 +22,9 @@ export default function TaxExport() {
             // Filter for the selected year
             const yearTransactions = allTransactions.filter(t => {
                 if (!t.date) return false;
-                const tYear = new Date(t.date).getFullYear();
+                const parsedDate = new Date(t.date);
+                if (isNaN(parsedDate.getTime())) false;
+                const tYear = parsedDate.getFullYear();
                 return tYear === year;
             });
 

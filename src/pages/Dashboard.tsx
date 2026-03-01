@@ -82,7 +82,11 @@ export default function Dashboard() {
 
         const mileageReimbursement = mileageMilesLogged * settings.mileageReimbursementRate;
         const mileageTaxDeductible = mileageMilesLogged * settings.mileageTaxDeductionRate;
-        const comprehensiveOpEx = totalOpEx + mileageReimbursement;
+
+        // As per the original Excel:
+        // Total Expenses = sum of all non-mileage, non-deposit rows
+        // Expenses after Reimbursement = Total Expenses - Reimbursement Total
+        const expensesAfterReimbursement = totalOpEx - mileageReimbursement;
 
         const pieData = Object.entries(expenseBreakdown)
             .filter(([_, v]) => v > 0)
@@ -95,8 +99,10 @@ export default function Dashboard() {
 
         return {
             grossIncome,
-            totalOpEx: comprehensiveOpEx,
-            netIncome: grossIncome - comprehensiveOpEx,
+            totalExpenses: totalOpEx,
+            reimbursementTotal: mileageReimbursement,
+            expensesAfterReimbursement,
+            netIncome: grossIncome - expensesAfterReimbursement,
             mileageStats: {
                 totalMiles: mileageMilesLogged,
                 reimbursedValue: mileageReimbursement,
@@ -151,13 +157,13 @@ export default function Dashboard() {
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Overhead Expenses</CardTitle>
+                        <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
                         <Activity className="h-4 w-4 text-rose-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">${metrics.totalOpEx.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+                        <div className="text-2xl font-bold">${metrics.totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
                         <p className="text-xs text-muted-foreground pt-1 border-t mt-2">
-                            Includes ${metrics.mileageStats.reimbursedValue.toLocaleString(undefined, { minimumFractionDigits: 2 })} Reimbursed Mileage
+                            After Reimbursement: ${metrics.expensesAfterReimbursement.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                         </p>
                     </CardContent>
                 </Card>
@@ -176,13 +182,14 @@ export default function Dashboard() {
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Mileage Deductions</CardTitle>
+                        <CardTitle className="text-sm font-medium">Mileage Info</CardTitle>
                         <Car className="h-4 w-4 text-blue-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{metrics.mileageStats.totalMiles.toLocaleString()} mi</div>
-                        <p className="text-xs text-muted-foreground pt-1 border-t mt-2">
-                            Tax Value: ${metrics.mileageStats.taxDeductibleValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        <p className="text-xs text-muted-foreground pt-1 border-t mt-2 flex justify-between">
+                            <span>Reimbursed: ${metrics.mileageStats.reimbursedValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                            <span>Fed Rate: ${metrics.mileageStats.taxDeductibleValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                         </p>
                     </CardContent>
                 </Card>

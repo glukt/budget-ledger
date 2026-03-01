@@ -36,8 +36,8 @@ export default function AuditLedger() {
     const [selectedCategory, setSelectedCategory] = useState<string>(
         location.state?.filterCategory || 'All'
     );
-    const [startDate, setStartDate] = useState<string>('');
-    const [endDate, setEndDate] = useState<string>('');
+    const [startDate, setStartDate] = useState<string>(location.state?.filterStartDate || '');
+    const [endDate, setEndDate] = useState<string>(location.state?.filterEndDate || '');
     const [filterMI, setFilterMI] = useState<boolean>(false);
     const [filterHome, setFilterHome] = useState<boolean>(false);
 

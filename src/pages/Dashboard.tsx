@@ -5,9 +5,11 @@ import { useSettings } from '../lib/settingsContext';
 import type { Transaction } from '../lib/sheets';
 import { fetchTransactions } from '../lib/sheets';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
-import { Activity, DollarSign, Car, Briefcase, TrendingUp, Filter } from 'lucide-react';
+import { Activity, DollarSign, Car, Briefcase, TrendingUp, Filter, HelpCircle } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { format } from 'date-fns';
+import Joyride, { STATUS } from 'react-joyride';
+import type { CallBackProps } from 'react-joyride';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658'];
 const MONTHS = [
@@ -30,6 +32,50 @@ export default function Dashboard() {
     const [selectedMonth, setSelectedMonth] = useState<string>('All');
     const [excludedCategories, setExcludedCategories] = useState<Set<string>>(new Set());
 
+    // Tour State
+    const [runTour, setRunTour] = useState(false);
+
+    const tourSteps = [
+        {
+            target: '.tour-start',
+            content: 'Welcome to your Budget Ledger! This interactive dashboard gives you a live look at your finances. Let’s take a quick tour.',
+            disableBeacon: true,
+        },
+        {
+            target: '.tour-filters',
+            content: 'Use these dropdowns to slice your data by a specific Year and Month. The entire dashboard will instantly recalculate.',
+        },
+        {
+            target: '.tour-main-stats',
+            content: 'These cards show your high-level metrics. You can actually click on any of these cards to instantly jump into the Audit Ledger and see exactly what transactions make up that number.',
+        },
+        {
+            target: '.tour-overhead',
+            content: 'This chart visually breaks down your spending. It responds to the date filters at the top.',
+        },
+        {
+            target: '.tour-top-expenses',
+            content: 'This list automatically pulls your largest single transactions. Spot a mistake? Click the transaction to jump straight to it in the ledger where you can edit or delete it.',
+        },
+        {
+            target: '.tour-category-totals',
+            content: 'Here are your exact totals by category. Want to exclude "Meals" from your total overhead temporarily? Just uncheck the box. Want to audit all "Lodging"? Right-click the row to jump to the ledger.',
+        },
+        {
+            target: '.tour-sidebar-nav', // Assuming Layout has a standard nav we might hit, but we'll stick to Dashboard for now
+            content: 'To start logging new expenses or modifying your custom categories, use the navigation menu on the left. You\'re ready to go!',
+        }
+    ];
+
+    const handleJoyrideCallback = (data: CallBackProps) => {
+        const { status } = data;
+        const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
+
+        if (finishedStatuses.includes(status)) {
+            setRunTour(false);
+        }
+    };
+
     const toggleCategory = (e: React.MouseEvent, cat: string) => {
         // Prevent event from bubbling up to the label wrapper
         e.stopPropagation();
@@ -46,6 +92,13 @@ export default function Dashboard() {
         e.preventDefault();
         e.stopPropagation();
         navigate('/audit', { state: { filterCategory: cat } });
+    };
+
+    const jumpToSpecificTransaction = (e: React.MouseEvent, cat: string, date: string) => {
+        e.preventDefault();
+        e.stopPropagation();
+        // Route to Audit Ledger and pre-fill both Category and Date filters to isolate the specific transaction
+        navigate('/audit', { state: { filterCategory: cat, filterStartDate: date, filterEndDate: date } });
     };
 
     useEffect(() => {
@@ -168,14 +221,38 @@ export default function Dashboard() {
     if (loading) return <div className="p-8 flex items-center justify-center text-muted-foreground">Loading insights...</div>;
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 relative">
+            <Joyride
+                steps={tourSteps}
+                run={runTour}
+                continuous
+                showProgress
+                showSkipButton
+                callback={handleJoyrideCallback}
+                styles={{
+                    options: {
+                        primaryColor: '#3b82f6', // Tailwind blue-500
+                        zIndex: 10000,
+                    }
+                }}
+            />
+
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
+                <div className="tour-start">
+                    <h2 className="text-2xl font-bold tracking-tight flex items-center gap-3">
+                        Dashboard
+                        <button
+                            onClick={() => setRunTour(true)}
+                            className="text-xs font-semibold bg-blue-100 text-blue-700 hover:bg-blue-200 px-2.5 py-1 rounded-full flex items-center gap-1 transition-colors"
+                        >
+                            <HelpCircle className="h-3.5 w-3.5" />
+                            Take a Tour
+                        </button>
+                    </h2>
                     <p className="text-muted-foreground">Your real-time financial insights.</p>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="tour-filters flex gap-2">
                     <select
                         className="rounded-md border border-input bg-background px-3 py-1.5 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
                         value={selectedYear}
@@ -196,7 +273,7 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+            <div className="tour-main-stats grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
                 <Card
                     className="cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-200 border-l-4 border-l-emerald-500"
                     onClick={(e) => jumpToLedger(e, 'Deposit')}
@@ -294,7 +371,7 @@ export default function Dashboard() {
             )}
 
             <div className="grid gap-6 lg:grid-cols-3 md:grid-cols-2">
-                <Card className="col-span-1 border shadow-sm">
+                <Card className="tour-overhead col-span-1 border shadow-sm">
                     <CardHeader>
                         <CardTitle>Overhead Breakdown</CardTitle>
                         <CardDescription>How much you're spending by category</CardDescription>
@@ -342,21 +419,32 @@ export default function Dashboard() {
                     <CardContent className="flex-1 overflow-auto">
                         {metrics.topExpenses.length > 0 ? (
                             <div className="space-y-4">
-                                {metrics.topExpenses.map((expense, i) => (
-                                    <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-accent/50 border border-border transition-colors hover:bg-accent">
-                                        <div className="space-y-1 overflow-hidden">
-                                            <p className="text-sm font-medium leading-none truncate pr-4 text-foreground">
-                                                {expense.name}
-                                            </p>
-                                            <p className="text-xs text-gray-500">
-                                                {format(new Date(expense.date), 'MMM d, yyyy')}
-                                            </p>
+                                {metrics.topExpenses.map((expense, i) => {
+                                    // Find original category to pass to the jump function
+                                    const originalTx = transactions.find(t => t.date === expense.date && t.amount === expense.amount && (t.remarks === expense.name || t.category === expense.name));
+                                    const category = originalTx ? originalTx.category : 'All';
+
+                                    return (
+                                        <div
+                                            key={i}
+                                            className="tour-top-expenses flex items-center justify-between p-3 rounded-lg bg-accent/50 border border-border transition-colors hover:bg-accent cursor-pointer"
+                                            onClick={(e) => jumpToSpecificTransaction(e, category, expense.date)}
+                                            title={`Click to view this specific transaction in the Audit Ledger`}
+                                        >
+                                            <div className="space-y-1 overflow-hidden pointer-events-none">
+                                                <p className="text-sm font-medium leading-none truncate pr-4 text-foreground">
+                                                    {expense.name}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {format(new Date(expense.date), 'MMM d, yyyy')}
+                                                </p>
+                                            </div>
+                                            <div className="font-semibold tabular-nums text-foreground bg-background px-3 py-1 rounded-md shadow-sm border border-border pointer-events-none">
+                                                ${expense.amount.toFixed(2)}
+                                            </div>
                                         </div>
-                                        <div className="font-semibold tabular-nums text-foreground bg-background px-3 py-1 rounded-md shadow-sm border border-border">
-                                            ${expense.amount.toFixed(2)}
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         ) : (
                             <div className="flex h-full items-center justify-center text-sm text-muted-foreground">

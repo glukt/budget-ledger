@@ -14,8 +14,20 @@ export default function Login() {
     }, [user, navigate]);
 
     return (
-        <div className="flex h-screen w-full items-center justify-center bg-background px-4">
-            <div className="w-full max-w-md space-y-8 bg-card p-8 rounded-xl shadow-lg border border-border">
+        <div className="relative flex h-screen w-full items-center justify-center px-4 overflow-hidden">
+            {/* Video Background */}
+            <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute top-0 left-0 w-full h-full object-cover z-0 filter brightness-[0.3]"
+            >
+                <source src="/Vintage_Document_Organization_Video.mp4" type="video/mp4" />
+            </video>
+
+            {/* Foreground Login Card */}
+            <div className="relative z-10 w-full max-w-md space-y-8 bg-card/95 backdrop-blur shadow-2xl p-8 rounded-xl border border-border">
                 <div className="text-center">
                     <h2 className="mt-6 text-3xl font-extrabold text-foreground">
                         Budget Ledger

@@ -14,6 +14,20 @@ const CATEGORIES = [
     "Liability Insurance", "Tools/Supplies", "Meals", "Lodging", "Fuel", "Other"
 ];
 
+const CATEGORY_COLORS: Record<string, string> = {
+    "Mileage": "border-l-blue-500",
+    "Deposit": "border-l-emerald-500",
+    "Internet": "border-l-indigo-500",
+    "Power": "border-l-yellow-500",
+    "Phone": "border-l-purple-500",
+    "Liability Insurance": "border-l-rose-500",
+    "Tools/Supplies": "border-l-orange-500",
+    "Meals": "border-l-red-400",
+    "Lodging": "border-l-teal-500",
+    "Fuel": "border-l-cyan-500",
+    "Other": "border-l-gray-500"
+};
+
 export default function AuditLedger() {
     const { accessToken } = useAuth();
     const location = useLocation();
@@ -25,6 +39,10 @@ export default function AuditLedger() {
     const [selectedCategory, setSelectedCategory] = useState<string>(
         location.state?.filterCategory || 'All'
     );
+    const [startDate, setStartDate] = useState<string>('');
+    const [endDate, setEndDate] = useState<string>('');
+    const [filterMI, setFilterMI] = useState<boolean>(false);
+    const [filterHome, setFilterHome] = useState<boolean>(false);
 
     // Modal State
     const [editingTx, setEditingTx] = useState<Transaction | null>(null);
@@ -87,10 +105,22 @@ export default function AuditLedger() {
     };
 
     const filteredTransactions = useMemo(() => {
-        if (selectedCategory === 'All') return transactions;
-        if (selectedCategory === 'ExpenseOnly') return transactions.filter(t => t.category !== 'Deposit' && t.category !== 'Mileage');
-        return transactions.filter(t => t.category === selectedCategory);
-    }, [transactions, selectedCategory]);
+        return transactions.filter(t => {
+            // Category Filter
+            if (selectedCategory === 'ExpenseOnly' && (t.category === 'Deposit' || t.category === 'Mileage')) return false;
+            if (selectedCategory !== 'All' && selectedCategory !== 'ExpenseOnly' && t.category !== selectedCategory) return false;
+
+            // Date Filters
+            if (startDate && t.date < startDate) return false;
+            if (endDate && t.date > endDate) return false;
+
+            // MI / Home Filters
+            if (filterMI && !t.isMichiganPay) return false;
+            if (filterHome && !t.isHomePay) return false;
+
+            return true;
+        });
+    }, [transactions, selectedCategory, startDate, endDate, filterMI, filterHome]);
 
     return (
         <div className="space-y-6 relative">
@@ -100,9 +130,9 @@ export default function AuditLedger() {
                     <p className="text-muted-foreground">Historical view of all transactions.</p>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-muted/50 p-4 rounded-lg border border-border">
                     <select
-                        className="rounded-md border border-input bg-white px-3 py-1.5 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+                        className="rounded-md border border-input bg-background px-3 py-1.5 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
                     >
@@ -111,13 +141,54 @@ export default function AuditLedger() {
                         {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                     </select>
 
-                    <button
-                        onClick={loadData}
-                        className="text-sm text-blue-600 hover:text-blue-800"
-                        disabled={loading || saving}
-                    >
-                        {loading ? "Refreshing..." : "Refresh"}
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <Input
+                            type="date"
+                            className="w-auto h-8 text-sm"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            title="Start Date"
+                        />
+                        <span className="text-muted-foreground text-sm">to</span>
+                        <Input
+                            type="date"
+                            className="w-auto h-8 text-sm"
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            title="End Date"
+                        />
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        <label className="flex items-center space-x-2 text-sm cursor-pointer">
+                            <input
+                                type="checkbox"
+                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4 bg-background"
+                                checked={filterMI}
+                                onChange={(e) => setFilterMI(e.target.checked)}
+                            />
+                            <span>MI Only</span>
+                        </label>
+                        <label className="flex items-center space-x-2 text-sm cursor-pointer">
+                            <input
+                                type="checkbox"
+                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4 bg-background"
+                                checked={filterHome}
+                                onChange={(e) => setFilterHome(e.target.checked)}
+                            />
+                            <span>Home Pay Only</span>
+                        </label>
+                    </div>
+
+                    <div className="sm:ml-auto">
+                        <button
+                            onClick={loadData}
+                            className="text-sm text-blue-500 hover:text-blue-400 font-medium"
+                            disabled={loading || saving}
+                        >
+                            {loading ? "Refreshing..." : "Refresh Data"}
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -130,7 +201,7 @@ export default function AuditLedger() {
 
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
-                            <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b">
+                            <thead className="text-xs text-muted-foreground uppercase bg-muted border-b">
                                 <tr>
                                     <th className="px-4 py-3">Date</th>
                                     <th className="px-4 py-3">Category</th>
@@ -143,17 +214,20 @@ export default function AuditLedger() {
                             <tbody>
                                 {filteredTransactions.length === 0 && !loading && (
                                     <tr>
-                                        <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                                        <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
                                             No transactions found for the selected category.
                                         </td>
                                     </tr>
                                 )}
                                 {filteredTransactions.map((t, idx) => (
-                                    <tr key={idx} className="bg-white border-b hover:bg-gray-50 transition-colors">
+                                    <tr
+                                        key={idx}
+                                        className={`bg-background border-b hover:bg-muted transition-colors border-l-4 ${CATEGORY_COLORS[t.category] || "border-l-transparent"}`}
+                                    >
                                         <td className="px-4 py-3 whitespace-nowrap">
                                             {t.date && !isNaN(new Date(t.date).getTime()) ? format(new Date(t.date), 'MMM d, yyyy') : (t.date || "Unknown Date")}
                                         </td>
-                                        <td className="px-4 py-3 font-medium text-gray-900">
+                                        <td className="px-4 py-3 font-medium text-foreground">
                                             {t.category}
                                         </td>
                                         <td className="px-4 py-3 text-right font-medium">
@@ -165,7 +239,7 @@ export default function AuditLedger() {
                                             {t.isHomePay && <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10 mb-1">Home</span>}
                                             {t.isMichiganPay && <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">MI</span>}
                                         </td>
-                                        <td className="px-4 py-3 text-gray-500 truncate max-w-[150px] sm:max-w-[200px]">
+                                        <td className="px-4 py-3 text-muted-foreground truncate max-w-[150px] sm:max-w-[200px]">
                                             {t.remarks || "-"}
                                         </td>
                                         <td className="px-4 py-3 text-right">
@@ -188,8 +262,8 @@ export default function AuditLedger() {
             {/* Edit Modal / Slide-over Overlay */}
             {editingTx && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
-                        <div className="flex justify-between items-center p-4 border-b bg-gray-50">
+                    <div className="bg-background rounded-lg shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+                        <div className="flex justify-between items-center p-4 border-b bg-muted">
                             <h3 className="font-semibold text-lg">Edit Transaction</h3>
                             <button onClick={() => setEditingTx(null)} className="text-gray-400 hover:text-gray-600">
                                 <X className="h-5 w-5" />
@@ -270,7 +344,7 @@ export default function AuditLedger() {
                                 </div>
                             </form>
                         </div>
-                        <div className="p-4 border-t bg-gray-50 flex justify-between gap-3">
+                        <div className="p-4 border-t bg-muted flex justify-between gap-3">
                             <Button
                                 type="button"
                                 variant="destructive"

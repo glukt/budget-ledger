@@ -165,7 +165,7 @@ export default function Dashboard() {
         };
     }, [transactions, settings, selectedYear, selectedMonth, excludedCategories]);
 
-    if (loading) return <div className="p-8 flex items-center justify-center text-gray-500">Loading insights...</div>;
+    if (loading) return <div className="p-8 flex items-center justify-center text-muted-foreground">Loading insights...</div>;
 
     return (
         <div className="space-y-6">
@@ -177,7 +177,7 @@ export default function Dashboard() {
 
                 <div className="flex gap-2">
                     <select
-                        className="rounded-md border border-input bg-white px-3 py-1.5 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+                        className="rounded-md border border-input bg-background px-3 py-1.5 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
                         value={selectedYear}
                         onChange={(e) => setSelectedYear(e.target.value)}
                     >
@@ -186,7 +186,7 @@ export default function Dashboard() {
                     </select>
 
                     <select
-                        className="rounded-md border border-input bg-white px-3 py-1.5 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+                        className="rounded-md border border-input bg-background px-3 py-1.5 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
                         value={selectedMonth}
                         onChange={(e) => setSelectedMonth(e.target.value)}
                     >
@@ -263,7 +263,7 @@ export default function Dashboard() {
                 <Card className="border shadow-sm mb-6">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <TrendingUp className="h-5 w-5 text-gray-500" />
+                            <TrendingUp className="h-5 w-5 text-muted-foreground" />
                             Income vs. Expenses Trend
                         </CardTitle>
                         <CardDescription>Monthly comparison of gross income and operating expenses</CardDescription>
@@ -334,7 +334,7 @@ export default function Dashboard() {
                 <Card className="col-span-1 border shadow-sm flex flex-col">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <TrendingUp className="h-5 w-5 text-gray-500" />
+                            <TrendingUp className="h-5 w-5 text-muted-foreground" />
                             Top Expenses
                         </CardTitle>
                         <CardDescription>Your largest single transactions</CardDescription>
@@ -343,16 +343,16 @@ export default function Dashboard() {
                         {metrics.topExpenses.length > 0 ? (
                             <div className="space-y-4">
                                 {metrics.topExpenses.map((expense, i) => (
-                                    <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-gray-50/50 border border-gray-100 transition-colors hover:bg-gray-50">
+                                    <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-accent/50 border border-border transition-colors hover:bg-accent">
                                         <div className="space-y-1 overflow-hidden">
-                                            <p className="text-sm font-medium leading-none truncate pr-4 text-gray-900">
+                                            <p className="text-sm font-medium leading-none truncate pr-4 text-foreground">
                                                 {expense.name}
                                             </p>
                                             <p className="text-xs text-gray-500">
                                                 {format(new Date(expense.date), 'MMM d, yyyy')}
                                             </p>
                                         </div>
-                                        <div className="font-semibold tabular-nums text-gray-900 bg-white px-3 py-1 rounded-md shadow-sm border border-gray-100">
+                                        <div className="font-semibold tabular-nums text-foreground bg-white px-3 py-1 rounded-md shadow-sm border border-gray-100">
                                             ${expense.amount.toFixed(2)}
                                         </div>
                                     </div>
@@ -392,9 +392,9 @@ export default function Dashboard() {
                                             onChange={(e) => toggleCategory(e as any, cat.name)}
                                             onClick={(e) => e.stopPropagation()}
                                         />
-                                        <span className={`text-sm font-medium hover:text-blue-600 hover:underline ${excludedCategories.has(cat.name) ? 'text-gray-400 line-through' : 'text-gray-900'}`}>{cat.name}</span>
+                                        <span className={`text-sm font-medium hover:text-blue-600 hover:underline ${excludedCategories.has(cat.name) ? 'text-muted-foreground line-through' : 'text-foreground'}`}>{cat.name}</span>
                                     </div>
-                                    <div className={`font-semibold tabular-nums text-sm ${excludedCategories.has(cat.name) ? 'text-gray-400' : 'text-gray-900'}`}>
+                                    <div className={`font-semibold tabular-nums text-sm ${excludedCategories.has(cat.name) ? 'text-muted-foreground' : 'text-foreground'}`}>
                                         {cat.name === 'Mileage'
                                             ? `${cat.total.toLocaleString()} mi`
                                             : `$${cat.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}

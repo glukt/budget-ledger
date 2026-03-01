@@ -4,7 +4,7 @@ import { useSettings } from '../lib/settingsContext';
 import type { Transaction } from '../lib/sheets';
 import { fetchTransactions } from '../lib/sheets';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
-import { Activity, DollarSign, Car, Briefcase, TrendingUp } from 'lucide-react';
+import { Activity, DollarSign, Car, Briefcase, TrendingUp, Filter } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 import { format } from 'date-fns';
 
@@ -26,6 +26,16 @@ export default function Dashboard() {
 
     const [selectedYear, setSelectedYear] = useState<string>('All');
     const [selectedMonth, setSelectedMonth] = useState<string>('All');
+    const [excludedCategories, setExcludedCategories] = useState<Set<string>>(new Set());
+
+    const toggleCategory = (cat: string) => {
+        setExcludedCategories(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(cat)) newSet.delete(cat);
+            else newSet.add(cat);
+            return newSet;
+        });
+    };
 
     useEffect(() => {
         if (accessToken) {
@@ -55,6 +65,7 @@ export default function Dashboard() {
         let mileageMilesLogged = 0;
         const expenseBreakdown: Record<string, number> = {};
         const individualExpenses: { name: string; amount: number; date: string }[] = [];
+        const categoryTotals: Record<string, number> = {};
 
         transactions.forEach(t => {
             if (!t.date) return;
@@ -64,6 +75,12 @@ export default function Dashboard() {
             // Apply Filters
             if (selectedYear !== 'All' && parts[0] !== selectedYear) return;
             if (selectedMonth !== 'All' && parts[1] !== selectedMonth) return;
+
+            // Always add to category totals so they show in the list
+            categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
+
+            // Stop processing metrics if category is isolated/excluded
+            if (excludedCategories.has(t.category)) return;
 
             if (t.category === 'Deposit') {
                 grossIncome += t.amount;
@@ -97,6 +114,10 @@ export default function Dashboard() {
             .sort((a, b) => b.amount - a.amount)
             .slice(0, 6);
 
+        const categoryTotalsList = Object.entries(categoryTotals)
+            .map(([name, total]) => ({ name, total }))
+            .sort((a, b) => b.total - a.total);
+
         return {
             grossIncome,
             totalExpenses: totalOpEx,
@@ -109,9 +130,10 @@ export default function Dashboard() {
                 taxDeductibleValue: mileageTaxDeductible
             },
             pieData,
-            topExpenses
+            topExpenses,
+            categoryTotalsList
         };
-    }, [transactions, settings, selectedYear, selectedMonth]);
+    }, [transactions, settings, selectedYear, selectedMonth, excludedCategories]);
 
     if (loading) return <div className="p-8 flex items-center justify-center text-gray-500">Loading insights...</div>;
 
@@ -195,7 +217,7 @@ export default function Dashboard() {
                 </Card>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 lg:grid-cols-3 md:grid-cols-2">
                 <Card className="col-span-1 border shadow-sm">
                     <CardHeader>
                         <CardTitle>Overhead Breakdown</CardTitle>
@@ -263,6 +285,38 @@ export default function Dashboard() {
                                 No expenses to list.
                             </div>
                         )}
+                    </CardContent>
+                </Card>
+
+                <Card className="col-span-1 border shadow-sm flex flex-col">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Filter className="h-5 w-5 text-gray-500" />
+                            Category Totals
+                        </CardTitle>
+                        <CardDescription>Filter metrics by category</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex-1 overflow-auto max-h-[320px]">
+                        <div className="space-y-2 pr-1">
+                            {metrics.categoryTotalsList.map((cat, i) => (
+                                <label key={i} className="flex items-center justify-between p-2 rounded-lg bg-gray-50/50 border border-gray-100 transition-colors hover:bg-gray-50 cursor-pointer">
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            type="checkbox"
+                                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                                            checked={!excludedCategories.has(cat.name)}
+                                            onChange={() => toggleCategory(cat.name)}
+                                        />
+                                        <span className={`text-sm font-medium ${excludedCategories.has(cat.name) ? 'text-gray-400 line-through' : 'text-gray-900'}`}>{cat.name}</span>
+                                    </div>
+                                    <div className={`font-semibold tabular-nums text-sm ${excludedCategories.has(cat.name) ? 'text-gray-400' : 'text-gray-900'}`}>
+                                        {cat.name === 'Mileage'
+                                            ? `${cat.total.toLocaleString()} mi`
+                                            : `$${cat.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                    </div>
+                                </label>
+                            ))}
+                        </div>
                     </CardContent>
                 </Card>
             </div>

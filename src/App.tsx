@@ -3,7 +3,6 @@ import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './lib/auth'
 import { ThemeProvider } from './lib/themeContext'
 import { ScheduledTransactionsProvider } from './lib/scheduledContext'
-import { useRecurringEngine } from './lib/recurringEngine'
 import { Toaster } from 'sonner'
 
 import Dashboard from './pages/Dashboard'
@@ -18,10 +17,6 @@ import Settings from './pages/Settings'
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
-
-  // This engine silently wakes up after `user` and `scheduledTransactions` load,
-  // evaluates if any Trigger Dates are past due, and batch processes them.
-  useRecurringEngine();
 
   if (loading) return <div>Loading...</div>;
   if (!user) return <Navigate to="/login" replace />;

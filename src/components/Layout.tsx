@@ -2,9 +2,13 @@
 import { Outlet, NavLink } from 'react-router-dom';
 import { LayoutDashboard, PlusCircle, Search, LogOut, FileDown, Settings as SettingsIcon } from 'lucide-react';
 import { useAuth } from '../lib/auth';
+import { useRecurringEngine } from '../lib/recurringEngine';
 
 export default function Layout() {
     const { user, logout } = useAuth();
+
+    // Evaluate if any Trigger Dates are past due, and batch process them.
+    useRecurringEngine();
 
     const navItems = [
         { to: "/", icon: LayoutDashboard, label: "Dashboard" },

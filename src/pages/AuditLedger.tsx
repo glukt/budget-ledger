@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { fetchTransactions, updateTransaction, deleteTransaction } from '../lib/sheets';
 import type { Transaction } from '../lib/sheets';
@@ -15,9 +16,15 @@ const CATEGORIES = [
 
 export default function AuditLedger() {
     const { accessToken } = useAuth();
+    const location = useLocation();
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    // Filtering State
+    const [selectedCategory, setSelectedCategory] = useState<string>(
+        location.state?.filterCategory || 'All'
+    );
 
     // Modal State
     const [editingTx, setEditingTx] = useState<Transaction | null>(null);
@@ -79,6 +86,11 @@ export default function AuditLedger() {
         }
     };
 
+    const filteredTransactions = useMemo(() => {
+        if (selectedCategory === 'All') return transactions;
+        return transactions.filter(t => t.category === selectedCategory);
+    }, [transactions, selectedCategory]);
+
     return (
         <div className="space-y-6 relative">
             <div className="flex items-center justify-between">
@@ -86,13 +98,25 @@ export default function AuditLedger() {
                     <h2 className="text-2xl font-bold tracking-tight">Audit Ledger</h2>
                     <p className="text-muted-foreground">Historical view of all transactions.</p>
                 </div>
-                <button
-                    onClick={loadData}
-                    className="text-sm text-blue-600 hover:text-blue-800"
-                    disabled={loading || saving}
-                >
-                    {loading ? "Refreshing..." : "Refresh"}
-                </button>
+
+                <div className="flex items-center gap-4">
+                    <select
+                        className="rounded-md border border-input bg-white px-3 py-1.5 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                    >
+                        <option value="All">All Categories</option>
+                        {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                    </select>
+
+                    <button
+                        onClick={loadData}
+                        className="text-sm text-blue-600 hover:text-blue-800"
+                        disabled={loading || saving}
+                    >
+                        {loading ? "Refreshing..." : "Refresh"}
+                    </button>
+                </div>
             </div>
 
             <Card>
@@ -115,14 +139,14 @@ export default function AuditLedger() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {transactions.length === 0 && !loading && (
+                                {filteredTransactions.length === 0 && !loading && (
                                     <tr>
                                         <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
-                                            No transactions found. Log one to get started!
+                                            No transactions found for the selected category.
                                         </td>
                                     </tr>
                                 )}
-                                {transactions.map((t, idx) => (
+                                {filteredTransactions.map((t, idx) => (
                                     <tr key={idx} className="bg-white border-b hover:bg-gray-50 transition-colors">
                                         <td className="px-4 py-3 whitespace-nowrap">
                                             {t.date && !isNaN(new Date(t.date).getTime()) ? format(new Date(t.date), 'MMM d, yyyy') : (t.date || "Unknown Date")}

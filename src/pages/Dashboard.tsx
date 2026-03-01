@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { useSettings } from '../lib/settingsContext';
 import type { Transaction } from '../lib/sheets';
@@ -21,6 +22,7 @@ const MONTHS = [
 export default function Dashboard() {
     const { accessToken } = useAuth();
     const { settings } = useSettings();
+    const navigate = useNavigate();
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -28,13 +30,22 @@ export default function Dashboard() {
     const [selectedMonth, setSelectedMonth] = useState<string>('All');
     const [excludedCategories, setExcludedCategories] = useState<Set<string>>(new Set());
 
-    const toggleCategory = (cat: string) => {
+    const toggleCategory = (e: React.MouseEvent, cat: string) => {
+        // Prevent event from bubbling up to the label wrapper
+        e.stopPropagation();
         setExcludedCategories(prev => {
             const newSet = new Set(prev);
             if (newSet.has(cat)) newSet.delete(cat);
             else newSet.add(cat);
             return newSet;
         });
+    };
+
+    const jumpToLedger = (e: React.MouseEvent, cat: string) => {
+        // Prevent event bubbling if necessary
+        e.preventDefault();
+        e.stopPropagation();
+        navigate('/ledger', { state: { filterCategory: cat } });
     };
 
     useEffect(() => {
@@ -299,22 +310,29 @@ export default function Dashboard() {
                     <CardContent className="flex-1 overflow-auto max-h-[320px]">
                         <div className="space-y-2 pr-1">
                             {metrics.categoryTotalsList.map((cat, i) => (
-                                <label key={i} className="flex items-center justify-between p-2 rounded-lg bg-gray-50/50 border border-gray-100 transition-colors hover:bg-gray-50 cursor-pointer">
+                                <div
+                                    key={i}
+                                    className="flex items-center justify-between p-2 rounded-lg bg-gray-50/50 border border-gray-100 transition-colors hover:bg-gray-50 cursor-pointer"
+                                    onClick={(e) => jumpToLedger(e, cat.name)}
+                                    onContextMenu={(e) => jumpToLedger(e, cat.name)}
+                                    title={`Click or Right-Click to view all ${cat.name} transactions`}
+                                >
                                     <div className="flex items-center gap-3">
                                         <input
                                             type="checkbox"
                                             className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
                                             checked={!excludedCategories.has(cat.name)}
-                                            onChange={() => toggleCategory(cat.name)}
+                                            onChange={(e) => toggleCategory(e as any, cat.name)}
+                                            onClick={(e) => e.stopPropagation()}
                                         />
-                                        <span className={`text-sm font-medium ${excludedCategories.has(cat.name) ? 'text-gray-400 line-through' : 'text-gray-900'}`}>{cat.name}</span>
+                                        <span className={`text-sm font-medium hover:text-blue-600 hover:underline ${excludedCategories.has(cat.name) ? 'text-gray-400 line-through' : 'text-gray-900'}`}>{cat.name}</span>
                                     </div>
                                     <div className={`font-semibold tabular-nums text-sm ${excludedCategories.has(cat.name) ? 'text-gray-400' : 'text-gray-900'}`}>
                                         {cat.name === 'Mileage'
                                             ? `${cat.total.toLocaleString()} mi`
                                             : `$${cat.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                     </div>
-                                </label>
+                                </div>
                             ))}
                         </div>
                     </CardContent>

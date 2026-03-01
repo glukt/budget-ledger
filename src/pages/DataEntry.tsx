@@ -6,6 +6,11 @@ import type { Transaction } from '../lib/sheets';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
+import { useScheduledTransactions } from '../lib/scheduledContext';
+import { appendScheduledTransaction, deleteScheduledTransaction, type ScheduledTransaction } from '../lib/sheets';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
+import { Label } from '../components/ui/label';
+import { CalendarClock, Plus, Trash2 } from 'lucide-react';
 
 export default function DataEntry() {
     const { accessToken } = useAuth();
@@ -13,6 +18,20 @@ export default function DataEntry() {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Scheduled Transactions State
+    const { scheduledTransactions, refreshScheduledTransactions } = useScheduledTransactions();
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+    // New Subscription Form State
+    const [subName, setSubName] = useState('');
+    const [subAmount, setSubAmount] = useState('');
+    const [subCategory, setSubCategory] = useState('');
+    const [subIsHomePay, setSubIsHomePay] = useState(false);
+    const [subIsMichiganPay, setSubIsMichiganPay] = useState(false);
+    const [subFrequency, setSubFrequency] = useState<'Weekly' | 'Monthly' | 'Yearly'>('Monthly');
+    const [subNextDate, setSubNextDate] = useState('');
+    const [subMngLoading, setSubMngLoading] = useState(false);
 
     const [formData, setFormData] = useState<Transaction>({
         date: new Date().toISOString().split("T")[0],
@@ -99,6 +118,55 @@ export default function DataEntry() {
             setError(err.message || "Failed to log expense.");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleCreateSubscription = async () => {
+        if (!accessToken || !subName || !subAmount || !subCategory || !subNextDate) return;
+        setSubMngLoading(true);
+        try {
+            const newSub: ScheduledTransaction = {
+                name: subName,
+                amount: parseFloat(subAmount) || 0,
+                category: subCategory,
+                isHomePay: subIsHomePay,
+                isMichiganPay: subIsMichiganPay,
+                frequency: subFrequency,
+                nextTriggerDate: subNextDate,
+            };
+            await appendScheduledTransaction(accessToken, newSub);
+            await refreshScheduledTransactions();
+
+            // Reset form
+            setSubName('');
+            setSubAmount('');
+            setSubCategory('');
+            setSubIsHomePay(false);
+            setSubIsMichiganPay(false);
+            setSubFrequency('Monthly');
+            setSubNextDate('');
+            setIsDialogOpen(false);
+
+            setSuccess(true);
+            setTimeout(() => setSuccess(false), 3000);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setSubMngLoading(false);
+        }
+    };
+
+    const handleDeleteSubscription = async (rowNumber?: number) => {
+        if (!accessToken || !rowNumber) return;
+        if (!confirm("Are you sure you want to delete this scheduled transaction?")) return;
+        setSubMngLoading(true);
+        try {
+            await deleteScheduledTransaction(accessToken, rowNumber);
+            await refreshScheduledTransactions();
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setSubMngLoading(false);
         }
     };
 
@@ -285,6 +353,122 @@ export default function DataEntry() {
                             {loading ? "Saving..." : isSplit ? "Save Split Records" : "Save Entry"}
                         </Button>
                     </form>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <div className="space-y-1">
+                        <CardTitle className="flex items-center gap-2">
+                            <CalendarClock className="h-5 w-5 text-blue-500" />
+                            Recurring Transactions
+                        </CardTitle>
+                        <CardDescription>
+                            Define expenses or paychecks that should be automatically logged when you open the app.
+                        </CardDescription>
+                    </div>
+
+                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button size="sm" className="gap-2 shrink-0">
+                                <Plus className="h-4 w-4" /> Schedule New
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                            <DialogHeader>
+                                <DialogTitle>Create Scheduled Transaction</DialogTitle>
+                                <DialogDescription>
+                                    Automate an overhead cost. The engine checks this every time you log in.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="grid gap-4 py-4">
+                                <div className="space-y-2">
+                                    <Label>Name / Identifier</Label>
+                                    <input value={subName} onChange={(e) => setSubName(e.target.value)} placeholder="e.g. Fiber Internet" className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm focus:ring-2 focus:ring-ring" />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Amount</Label>
+                                        <input type="number" step="0.01" value={subAmount} onChange={(e) => setSubAmount(e.target.value)} placeholder="0.00" className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm focus:ring-2 focus:ring-ring" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Category</Label>
+                                        <select value={subCategory} onChange={(e) => setSubCategory(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-ring">
+                                            <option value="" disabled>Select...</option>
+                                            {settings.categories.map(c => <option key={c} value={c}>{c}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Billing Frequency</Label>
+                                        <select value={subFrequency} onChange={(e) => setSubFrequency(e.target.value as any)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                                            <option value="Weekly">Weekly</option>
+                                            <option value="Monthly">Monthly</option>
+                                            <option value="Yearly">Yearly</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Next Trigger Date</Label>
+                                        <input type="date" value={subNextDate} onChange={(e) => setSubNextDate(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm focus:ring-2 focus:ring-ring" />
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-4 pt-2">
+                                    <label className="flex items-center space-x-2 text-sm">
+                                        <input type="checkbox" checked={subIsHomePay} onChange={(e) => setSubIsHomePay(e.target.checked)} className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                                        <span>Home Pay?</span>
+                                    </label>
+                                    <label className="flex items-center space-x-2 text-sm">
+                                        <input type="checkbox" checked={subIsMichiganPay} onChange={(e) => setSubIsMichiganPay(e.target.checked)} className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                                        <span>MI Pay?</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <Button disabled={subMngLoading || !subName || !subAmount || !subCategory || !subNextDate} onClick={handleCreateSubscription}>
+                                    {subMngLoading ? "Processing..." : "Save Schedule"}
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-2">
+                        {scheduledTransactions.length === 0 ? (
+                            <div className="text-center py-6 text-muted-foreground text-sm border-2 border-dashed rounded-lg bg-background/50">
+                                No recurring transactions scheduled.
+                            </div>
+                        ) : (
+                            scheduledTransactions.map((st) => (
+                                <div key={st.rowNumber} className="flex items-center justify-between p-3 border rounded-lg bg-card shadow-sm">
+                                    <div className="flex flex-col">
+                                        <span className="font-semibold text-sm">{st.name}</span>
+                                        <span className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                                            <span className="bg-accent text-accent-foreground px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider font-semibold">
+                                                {st.frequency}
+                                            </span>
+                                            {st.category} • Next: <b className={new Date(st.nextTriggerDate) <= new Date() ? "text-orange-500" : ""}>{st.nextTriggerDate}</b>
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <span className={`font-mono font-medium ${st.amount > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                            ${Math.abs(st.amount).toFixed(2)}
+                                        </span>
+                                        <button
+                                            onClick={() => handleDeleteSubscription(st.rowNumber)}
+                                            disabled={subMngLoading}
+                                            className="text-muted-foreground hover:text-red-500 p-1.5 rounded-md hover:bg-muted transition-colors disabled:opacity-50"
+                                            title="Delete Schedule"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
                 </CardContent>
             </Card>
         </div>

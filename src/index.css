@@ -103,8 +103,13 @@
   }
 
   body {
-    @apply bg-background text-foreground transition-colors duration-200;
+    @apply text-foreground transition-colors duration-200;
     font-feature-settings: "rlig" 1, "calt" 1;
+    background-image: url('/background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
   }
 }
 

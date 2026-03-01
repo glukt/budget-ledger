@@ -20,7 +20,7 @@ export default function Layout() {
     ];
 
     return (
-        <div className="flex min-h-screen bg-background flex-col pb-20 sm:flex-row sm:pb-0">
+        <div className="flex min-h-screen flex-col pb-20 sm:flex-row sm:pb-0 bg-background/60 backdrop-blur-md">
             {/* Sidebar / Bottom Nav */}
             <nav className="tour-sidebar-nav fixed bottom-0 left-0 right-0 z-50 flex h-16 border-t bg-card sm:static sm:h-screen sm:w-64 sm:flex-col sm:border-r sm:border-t-0 p-2 sm:p-4">
                 <div className="hidden sm:block mb-8 px-4 py-2">

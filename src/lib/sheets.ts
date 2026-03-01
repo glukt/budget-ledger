@@ -4,6 +4,7 @@ export const SPREADSHEET_ID = "1ooe6TFyX5sbqqLctsmUgrr-PjBWvRnwyNg-chreJMCI";
 // Replace with the exact names of the tabs in your Google Sheet
 export const RAW_LOG_RANGE = "Raw Data!A:F";
 export const SETTINGS_RANGE = "Settings!A:B";
+export const SCHEDULED_RANGE = "Scheduled!A:G";
 
 export interface Transaction {
     rowNumber?: number;
@@ -19,6 +20,17 @@ export interface Settings {
     mileageReimbursementRate: number;
     mileageTaxDeductionRate: number;
     categories: string[];
+}
+
+export interface ScheduledTransaction {
+    rowNumber?: number;
+    name: string;
+    amount: number;
+    category: string;
+    isHomePay: boolean;
+    isMichiganPay: boolean;
+    frequency: 'Weekly' | 'Monthly' | 'Yearly';
+    nextTriggerDate: string; // YYYY-MM-DD
 }
 
 /**
@@ -283,5 +295,126 @@ export async function updateSettings(accessToken: string, settings: Settings) {
         throw new Error(`Error updating settings: ${response.statusText}`);
     }
 
+    return await response.json();
+}
+
+/**
+ * Fetches scheduled transactions
+ */
+export async function fetchScheduledTransactions(accessToken: string): Promise<ScheduledTransaction[]> {
+    if (!SPREADSHEET_ID) {
+        throw new Error("Spreadsheet ID not configured.");
+    }
+
+    const response = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SCHEDULED_RANGE}`,
+        {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                Accept: "application/json",
+            },
+        }
+    );
+
+    if (!response.ok) {
+        // If the sheet doesn't exist yet, we can gracefully return empty array
+        if (response.status === 400) return [];
+        throw new Error(`Error fetching scheduled transactions: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const rows = data.values || [];
+
+    return rows.slice(1).map((row: any[], index: number) => ({
+        rowNumber: index + 2,
+        name: row[0] || "Unnamed Subscription",
+        amount: parseFloat(row[1]?.replace(/[$,]/g, "") || "0"),
+        category: row[2] || "Uncategorized",
+        isHomePay: row[3] === "TRUE" || row[3] === "Yes",
+        isMichiganPay: row[4] === "TRUE" || row[4] === "Yes",
+        frequency: (row[5] as 'Weekly' | 'Monthly' | 'Yearly') || 'Monthly',
+        nextTriggerDate: row[6] || "",
+    }));
+}
+
+/**
+ * Appends a new scheduled transaction
+ */
+export async function appendScheduledTransaction(accessToken: string, st: ScheduledTransaction) {
+    if (!SPREADSHEET_ID) throw new Error("Spreadsheet ID not configured.");
+
+    const rowData = [
+        st.name,
+        st.amount.toString(),
+        st.category,
+        st.isHomePay ? "TRUE" : "FALSE",
+        st.isMichiganPay ? "TRUE" : "FALSE",
+        st.frequency,
+        st.nextTriggerDate,
+    ];
+
+    const response = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SCHEDULED_RANGE}:append?valueInputOption=USER_ENTERED`,
+        {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ values: [rowData] }),
+        }
+    );
+
+    if (!response.ok) throw new Error(`Error appending scheduled transaction: ${response.statusText}`);
+    return await response.json();
+}
+
+/**
+ * Updates an existing scheduled transaction
+ */
+export async function updateScheduledTransaction(accessToken: string, rowNumber: number, st: ScheduledTransaction) {
+    if (!SPREADSHEET_ID) throw new Error("Spreadsheet ID not configured.");
+
+    const rowData = [
+        st.name,
+        st.amount.toString(),
+        st.category,
+        st.isHomePay ? "TRUE" : "FALSE",
+        st.isMichiganPay ? "TRUE" : "FALSE",
+        st.frequency,
+        st.nextTriggerDate,
+    ];
+
+    const response = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Scheduled!A${rowNumber}:G${rowNumber}?valueInputOption=USER_ENTERED`,
+        {
+            method: "PUT",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ values: [rowData] }),
+        }
+    );
+
+    if (!response.ok) throw new Error(`Error updating scheduled transaction: ${response.statusText}`);
+    return await response.json();
+}
+
+/**
+ * Deletes a scheduled transaction
+ */
+export async function deleteScheduledTransaction(accessToken: string, rowNumber: number) {
+    if (!SPREADSHEET_ID) throw new Error("Spreadsheet ID not configured.");
+
+    const response = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Scheduled!A${rowNumber}:G${rowNumber}:clear`,
+        {
+            method: "POST",
+            headers: { Authorization: `Bearer ${accessToken}` }
+        }
+    );
+
+    if (!response.ok) throw new Error(`Error deleting scheduled transaction: ${response.statusText}`);
     return await response.json();
 }

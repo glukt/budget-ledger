@@ -1,786 +1,1064 @@
 [
     {
-        "date": "2025-12-31",
-        "amount": 563.61,
-        "category": "Health Insurance",
-        "isHomePay": false,
-        "isMichiganPay": false,
-        "remarks": "Blue Cross"
-    },
-    {
         "date": "2026-01-03",
         "amount": 74.67,
         "category": "Liability Insurance",
+        "remarks": "Hiscox liability",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Hiscox liability"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-07",
         "amount": 178.56,
         "category": "Phone",
+        "remarks": "verizon",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "verizon"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-09",
         "amount": 119.6,
         "category": "Medical Expenses",
+        "remarks": "guardian",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "guardian"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-09",
         "amount": 5445.0,
         "category": "Deposit",
-        "isHomePay": true,
+        "remarks": "mt olive work",
+        "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "mt olive work"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-10",
         "amount": 119.0,
         "category": "Vehicle Insurance",
+        "remarks": "Hanover",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Hanover"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-15",
         "amount": 1265.0,
         "category": "Deposit",
-        "isHomePay": true,
+        "remarks": "work mt olive",
+        "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "work mt olive"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-15",
         "amount": 660.0,
         "category": "Other",
+        "remarks": "lone moutain HOA",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "lone moutain HOA"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-16",
         "amount": 80.53,
         "category": "Vehicle Repairs/Maint",
+        "remarks": "steve schmit truck maint.",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "steve schmit truck maint."
+        "isOhioPay": false
     },
     {
         "date": "2026-01-16",
         "amount": 376.33,
         "category": "Power",
+        "remarks": "Ameren",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Ameren"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-18",
         "amount": 59.0,
         "category": "Fuel",
+        "remarks": "phillips 66",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "phillips 66"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-18",
         "amount": 47.0,
         "category": "Fuel",
+        "remarks": "Loves",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Loves"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-18",
         "amount": 8.88,
         "category": "Lunch",
+        "remarks": "Loves",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Loves"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-18",
         "amount": 8.62,
         "category": "Dinner",
+        "remarks": "Mcdonalds",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Mcdonalds"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-18",
         "amount": 47.0,
         "category": "Fuel",
+        "remarks": "loves",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "loves"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-18",
         "amount": 8.88,
         "category": "Lunch",
+        "remarks": "loves",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "loves"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-18",
         "amount": 8.62,
         "category": "Dinner",
+        "remarks": "Mcdonalds",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Mcdonalds"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-18",
         "amount": 59.0,
         "category": "Fuel",
+        "remarks": "phillips 66",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "phillips 66"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-20",
         "amount": 1421.27,
         "category": "Medical Expenses",
+        "remarks": "Anderson Carlas",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Anderson Carlas"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-20",
         "amount": 15.51,
         "category": "Medical Expenses",
+        "remarks": "Carlas praire",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Carlas praire"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-20",
         "amount": 55.93,
         "category": "Medical Expenses",
+        "remarks": "litchfield family practice",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "litchfield family practice"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-20",
         "amount": 138.4,
         "category": "Medical Expenses",
+        "remarks": "Midwest carlas",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Midwest carlas"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-20",
         "amount": 24.61,
         "category": "Medical Expenses",
+        "remarks": "Urology Jim",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Urology Jim"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-21",
         "amount": 109.6,
         "category": "Internet",
+        "remarks": "madison",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "madison"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-22",
         "amount": 12.51,
         "category": "Dinner",
+        "remarks": "Mcdonalds",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Mcdonalds"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-22",
         "amount": 30.47,
         "category": "Medical Expenses",
+        "remarks": "walmart Carla",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "walmart Carla"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-23",
         "amount": 81.65,
         "category": "Fuel",
+        "remarks": "phillips 66",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "phillips 66"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-23",
         "amount": 19.0,
         "category": "Fuel",
+        "remarks": "Pilot",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Pilot"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-23",
         "amount": 16.88,
         "category": "Lunch",
+        "remarks": "Mcdonalds",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Mcdonalds"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-24",
         "amount": 588.9,
         "category": "Lodging",
+        "remarks": "Logan trip",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Logan trip"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-24",
         "amount": 7122.9,
         "category": "Deposit",
+        "remarks": "Logan trip",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Logan trip"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-24",
         "amount": 980.0,
         "category": "Mileage",
+        "remarks": "Logan trip",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Logan trip"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-26",
         "amount": 7.09,
         "category": "Medical Expenses",
+        "remarks": "jim & carla scripts",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "jim & carla scripts"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-26",
         "amount": 13.59,
         "category": "Dinner",
+        "remarks": "wendys",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "wendys"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-26",
         "amount": 85.02,
         "category": "Fuel",
+        "remarks": "shell dowagiac",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "shell dowagiac"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-27",
         "amount": 11.53,
         "category": "Lunch",
+        "remarks": "Mcdonalds",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Mcdonalds"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-27",
         "amount": 404.45,
         "category": "Medical Expenses",
+        "remarks": "Crown Jims Glasses",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Crown Jims Glasses"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-28",
         "amount": 16.3,
         "category": "Dinner",
+        "remarks": "burger king",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "burger king"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-29",
         "amount": 11.34,
         "category": "Dinner",
+        "remarks": "phillips 66",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "phillips 66"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-29",
         "amount": 131.3,
         "category": "Lunch",
+        "remarks": "oak&ash",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "oak&ash"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-29",
         "amount": 83.03,
         "category": "Fuel",
+        "remarks": "phillips 66",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "phillips 66"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-30",
         "amount": 410.28,
         "category": "Lodging",
+        "remarks": "Hampton inn mich",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Hampton inn mich"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-30",
         "amount": 756.0,
         "category": "Mileage",
+        "remarks": "to & from Dowagiac",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "to & from Dowagiac"
+        "isOhioPay": false
     },
     {
         "date": "2026-01-30",
         "amount": 4456.08,
         "category": "Deposit",
+        "remarks": "work Dowagiac 1/26/26-1/30/26",
         "isHomePay": false,
-        "isMichiganPay": true,
-        "remarks": "work Dowagiac 1/26/26-1/30/26"
+        "isMichiganPay": false,
+        "isOhioPay": false
     },
     {
         "date": "2026-01-31",
         "amount": 563.31,
         "category": "Health Insurance",
+        "remarks": "Blue Cross",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Blue Cross"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-01",
         "amount": 21.0,
         "category": "Tools/Supplies",
+        "remarks": "freshbooks",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "freshbooks"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-01",
         "amount": 59.68,
         "category": "Tools/Supplies",
+        "remarks": "walmart paper/ink",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "walmart paper/ink"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-01",
         "amount": 40.01,
         "category": "Tools/Supplies",
+        "remarks": "harbor frieght tools",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "harbor frieght tools"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-01",
         "amount": 178.31,
         "category": "Phone",
+        "remarks": "verizon",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "verizon"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-04",
         "amount": 83.89,
         "category": "Fuel",
+        "remarks": "shell benton harbor",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "shell benton harbor"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-04",
         "amount": 26.14,
         "category": "Dinner",
+        "remarks": "Hilton",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Hilton"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-05",
         "amount": 10.26,
         "category": "Breakfast",
+        "remarks": "Mcdonalds",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Mcdonalds"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-05",
         "amount": 14.09,
         "category": "Dinner",
+        "remarks": "burger king",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "burger king"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-06",
         "amount": 90.0,
         "category": "Fuel",
+        "remarks": "loves",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "loves"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-06",
         "amount": 8.79,
         "category": "Breakfast",
+        "remarks": "Mcdonalds",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Mcdonalds"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-06",
         "amount": 12.94,
         "category": "Dinner",
+        "remarks": "Loves",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Loves"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-06",
         "amount": 25.58,
         "category": "Lunch",
+        "remarks": "tequlia rest. ohio",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "tequlia rest. ohio"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-06",
         "amount": 220.42,
         "category": "Lodging",
+        "remarks": "Hilton benton harbor",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Hilton benton harbor"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-06",
         "amount": 1060.0,
         "category": "Mileage",
+        "remarks": "Dowagiac and fostoria",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Dowagiac and fostoria"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-07",
         "amount": 55.9,
         "category": "Tools/Supplies",
+        "remarks": "home depot",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "home depot"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-07",
         "amount": 17.66,
         "category": "Other",
+        "remarks": "ez pass",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "ez pass"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-08",
         "amount": 1365.16,
         "category": "Deposit",
+        "remarks": "fostoria",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "fostoria"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-08",
         "amount": 1765.92,
         "category": "Deposit",
+        "remarks": "dowagiac",
         "isHomePay": false,
-        "isMichiganPay": true,
-        "remarks": "dowagiac"
+        "isMichiganPay": false,
+        "isOhioPay": false
     },
     {
         "date": "2026-02-10",
         "amount": 119.0,
         "category": "Vehicle Insurance",
+        "remarks": "Hanover",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Hanover"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-11",
         "amount": 40.27,
         "category": "Medical Expenses",
+        "remarks": "litchfield family practice",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "litchfield family practice"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-11",
         "amount": 34.78,
         "category": "Medical Expenses",
+        "remarks": "SIU medicine",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "SIU medicine"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-11",
         "amount": 25.79,
         "category": "Tools/Supplies",
+        "remarks": "home depot",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "home depot"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-13",
         "amount": 21.94,
         "category": "Tools/Supplies",
+        "remarks": "google software",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "google software"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-13",
         "amount": 36.45,
         "category": "Tools/Supplies",
+        "remarks": "mouse for office",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "mouse for office"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-14",
         "amount": 70.72,
         "category": "Fuel",
+        "remarks": "phillips 66",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "phillips 66"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-15",
         "amount": 63.0,
         "category": "Fuel",
+        "remarks": "loves",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "loves"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-15",
         "amount": 8.72,
         "category": "Breakfast",
+        "remarks": "Mcdonalds",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Mcdonalds"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-15",
         "amount": 13.66,
         "category": "Lunch",
+        "remarks": "wendys",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "wendys"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-15",
         "amount": 19.41,
         "category": "Tools/Supplies",
+        "remarks": "walmart",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "walmart"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-15",
         "amount": 177.16,
         "category": "Phone",
+        "remarks": "verizon",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "verizon"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-16",
         "amount": 12.69,
         "category": "Dinner",
+        "remarks": "burger king",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "burger king"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-17",
         "amount": 29.81,
         "category": "Dinner",
+        "remarks": "miilstone",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "miilstone"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-17",
         "amount": 11.19,
         "category": "Lunch",
+        "remarks": "wendys",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "wendys"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-17",
         "amount": 516.15,
         "category": "Power",
+        "remarks": "Ameren",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Ameren"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-19",
         "amount": 155.59,
         "category": "Lodging",
+        "remarks": "hiltion roanoke",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "hiltion roanoke"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-19",
         "amount": 471.12,
         "category": "Lodging",
+        "remarks": "sleep inn logan",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "sleep inn logan"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-19",
         "amount": 12.15,
         "category": "Lunch",
+        "remarks": "wendys",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "wendys"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-20",
         "amount": 13.75,
         "category": "Breakfast",
+        "remarks": "waffle house va",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "waffle house va"
+        "isOhioPay": false
+    },
+    {
+        "date": "2026-02-20",
+        "amount": 95.13,
+        "category": "Fuel",
+        "remarks": "shell",
+        "isHomePay": false,
+        "isMichiganPay": false,
+        "isOhioPay": false
     },
     {
         "date": "2026-02-21",
         "amount": 6.67,
         "category": "Breakfast",
+        "remarks": "Mcdonalds",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Mcdonalds"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-21",
         "amount": 10.8,
         "category": "Lunch",
+        "remarks": "wendys",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "wendys"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-21",
         "amount": 45.84,
         "category": "Tools/Supplies",
+        "remarks": "walmart",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "walmart"
+        "isOhioPay": false
+    },
+    {
+        "date": "2026-02-21",
+        "amount": 76.0,
+        "category": "Fuel",
+        "remarks": "loves",
+        "isHomePay": false,
+        "isMichiganPay": false,
+        "isOhioPay": false
     },
     {
         "date": "2026-02-23",
         "amount": 109.9,
         "category": "Internet",
+        "remarks": "madison",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "madison"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-23",
         "amount": 1427.94,
         "category": "Deposit",
+        "remarks": "Roanoke trip",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Roanoke trip"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-25",
         "amount": 12.69,
         "category": "Lunch",
+        "remarks": "burger king",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "burger king"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-25",
         "amount": 10422.67,
         "category": "Deposit",
+        "remarks": "Logan trip",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Logan trip"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-25",
         "amount": 1900.0,
         "category": "Mileage",
+        "remarks": "LOgan and Roanoke",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "LOgan and Roanoke"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-25",
         "amount": 30.47,
         "category": "Medical Expenses",
+        "remarks": "walmart Carla",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "walmart Carla"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-26",
         "amount": 75.0,
         "category": "Fuel",
+        "remarks": "phillips 66",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "phillips 66"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-26",
         "amount": 20.0,
         "category": "Fuel",
+        "remarks": "shell",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "shell"
+        "isOhioPay": false
     },
     {
         "date": "2026-02-26",
         "amount": 588.9,
         "category": "Lodging",
+        "remarks": "sleep inn logan",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "sleep inn logan"
+        "isOhioPay": false
+    },
+    {
+        "date": "2026-02-27",
+        "amount": 146.81,
+        "category": "Vehicle Repairs/Maint",
+        "remarks": "steve schmit truck maint.",
+        "isHomePay": false,
+        "isMichiganPay": false,
+        "isOhioPay": false
+    },
+    {
+        "date": "2026-02-27",
+        "amount": 2.06,
+        "category": "Medical Expenses",
+        "remarks": "sullivans",
+        "isHomePay": false,
+        "isMichiganPay": false,
+        "isOhioPay": false
     },
     {
         "date": "2026-02-28",
         "amount": 563.61,
         "category": "Health Insurance",
+        "remarks": "Blue Cross",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "Blue Cross"
+        "isOhioPay": false
     },
     {
-        "date": "2026-03-20",
-        "amount": 95.13,
-        "category": "Fuel",
+        "date": "2026-03-23",
+        "amount": 109.9,
+        "category": "Internet",
+        "remarks": "madison",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "shell"
+        "isOhioPay": false
     },
     {
-        "date": "2026-03-21",
-        "amount": 76.0,
-        "category": "Fuel",
+        "date": "2026-03-05",
+        "amount": 1416.0,
+        "category": "Mileage",
+        "remarks": "Roanoke trip",
         "isHomePay": false,
         "isMichiganPay": false,
-        "remarks": "loves"
+        "isOhioPay": false
+    },
+    {
+        "date": "2026-02-28",
+        "amount": 171.85,
+        "category": "Lodging",
+        "remarks": "roanoke trip",
+        "isHomePay": false,
+        "isMichiganPay": false,
+        "isOhioPay": false
+    },
+    {
+        "date": "2026-03-03",
+        "amount": 431.21,
+        "category": "Lodging",
+        "remarks": "roanoke trip",
+        "isHomePay": false,
+        "isMichiganPay": false,
+        "isOhioPay": false
+    },
+    {
+        "date": "2026-03-04",
+        "amount": 239.76,
+        "category": "Lodging",
+        "remarks": "roanoke trip",
+        "isHomePay": false,
+        "isMichiganPay": false,
+        "isOhioPay": false
+    },
+    {
+        "date": "2026-03-05",
+        "amount": 2291.49,
+        "category": "Deposit",
+        "remarks": "roanoke trip",
+        "isHomePay": false,
+        "isMichiganPay": false,
+        "isOhioPay": false
+    },
+    {
+        "date": "2026-02-28",
+        "amount": 10.06,
+        "category": "Tools/Supplies",
+        "remarks": "dollar general",
+        "isHomePay": false,
+        "isMichiganPay": false,
+        "isOhioPay": false
+    },
+    {
+        "date": "2026-02-25",
+        "amount": 37.91,
+        "category": "Lunch",
+        "remarks": "home town tavern",
+        "isHomePay": false,
+        "isMichiganPay": false,
+        "isOhioPay": false
+    },
+    {
+        "date": "2026-02-09",
+        "amount": 16.28,
+        "category": "Lunch",
+        "remarks": "Tilleys",
+        "isHomePay": false,
+        "isMichiganPay": false,
+        "isOhioPay": false
+    },
+    {
+        "date": "2026-02-23",
+        "amount": 9.16,
+        "category": "Lunch",
+        "remarks": "Mcdonalds",
+        "isHomePay": false,
+        "isMichiganPay": false,
+        "isOhioPay": false
+    },
+    {
+        "date": "2026-03-02",
+        "amount": 50.1,
+        "category": "Dinner",
+        "remarks": "Macados roanoke",
+        "isHomePay": false,
+        "isMichiganPay": false,
+        "isOhioPay": false
+    },
+    {
+        "date": "2026-03-04",
+        "amount": 30.65,
+        "category": "Lunch",
+        "remarks": "bus-ees",
+        "isHomePay": false,
+        "isMichiganPay": false,
+        "isOhioPay": false
+    },
+    {
+        "date": "2026-03-04",
+        "amount": 30.5,
+        "category": "Fuel",
+        "remarks": "phillips 66",
+        "isHomePay": false,
+        "isMichiganPay": false,
+        "isOhioPay": false
+    },
+    {
+        "date": "2026-03-04",
+        "amount": 17.6,
+        "category": "Fuel",
+        "remarks": "Buc-ees",
+        "isHomePay": false,
+        "isMichiganPay": false,
+        "isOhioPay": false
+    },
+    {
+        "date": "2026-03-01",
+        "amount": 30.76,
+        "category": "Dinner",
+        "remarks": "pizza hut roanoke",
+        "isHomePay": false,
+        "isMichiganPay": false,
+        "isOhioPay": false
+    },
+    {
+        "date": "2026-03-03",
+        "amount": 28.24,
+        "category": "Fuel",
+        "remarks": "phillips 66",
+        "isHomePay": false,
+        "isMichiganPay": false,
+        "isOhioPay": false
+    },
+    {
+        "date": "2026-02-28",
+        "amount": 29.31,
+        "category": "Fuel",
+        "remarks": "shell",
+        "isHomePay": false,
+        "isMichiganPay": false,
+        "isOhioPay": false
+    },
+    {
+        "date": "2026-02-28",
+        "amount": 21.0,
+        "category": "Tools/Supplies",
+        "remarks": "freshbooks",
+        "isHomePay": false,
+        "isMichiganPay": false,
+        "isOhioPay": false
+    },
+    {
+        "date": "2026-03-01",
+        "amount": 32.01,
+        "category": "Fuel",
+        "remarks": "sheetz",
+        "isHomePay": false,
+        "isMichiganPay": false,
+        "isOhioPay": false
     }
 ]

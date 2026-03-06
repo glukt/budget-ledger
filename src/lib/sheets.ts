@@ -2,9 +2,9 @@
 export const SPREADSHEET_ID = "1ooe6TFyX5sbqqLctsmUgrr-PjBWvRnwyNg-chreJMCI";
 
 // Replace with the exact names of the tabs in your Google Sheet
-export const RAW_LOG_RANGE = "Raw Data!A:F";
+export const RAW_LOG_RANGE = "Raw Data!A:G";
 export const SETTINGS_RANGE = "Settings!A:B";
-export const SCHEDULED_RANGE = "Scheduled!A:G";
+export const SCHEDULED_RANGE = "Scheduled!A:H";
 
 export interface Transaction {
     rowNumber?: number;
@@ -13,6 +13,7 @@ export interface Transaction {
     category: string;
     isHomePay: boolean;
     isMichiganPay: boolean;
+    isOhioPay: boolean;
     remarks: string;
 }
 
@@ -20,6 +21,7 @@ export interface Settings {
     mileageReimbursementRate: number;
     mileageTaxDeductionRate: number;
     categories: string[];
+    netIncomeDeductions: string[];
 }
 
 export interface ScheduledTransaction {
@@ -29,6 +31,7 @@ export interface ScheduledTransaction {
     category: string;
     isHomePay: boolean;
     isMichiganPay: boolean;
+    isOhioPay: boolean;
     frequency: 'Weekly' | 'Monthly' | 'Yearly';
     nextTriggerDate: string; // YYYY-MM-DD
 }
@@ -59,7 +62,7 @@ export async function fetchTransactions(accessToken: string): Promise<Transactio
     const data = await response.json();
     const rows = data.values || [];
 
-    // Assuming row 1 is headers: Date, Amount, Category, Home Pay, Michigan Pay, Remarks
+    // Assuming row 1 is headers: Date, Amount, Category, Home Pay, Michigan Pay, Ohio Pay, Remarks
     return rows.slice(1).map((row: any[], index: number) => ({
         rowNumber: index + 2, // Sheet rows are 1-indexed, and row 1 is headers
         date: row[0] || "",
@@ -67,7 +70,8 @@ export async function fetchTransactions(accessToken: string): Promise<Transactio
         category: row[2] || "Uncategorized",
         isHomePay: row[3] === "TRUE" || row[3] === "Yes",
         isMichiganPay: row[4] === "TRUE" || row[4] === "Yes",
-        remarks: row[5] || "",
+        isOhioPay: row[5] === "TRUE" || row[5] === "Yes",
+        remarks: row[6] || "",
     }));
 }
 
@@ -85,6 +89,7 @@ export async function appendTransaction(accessToken: string, transaction: Transa
         transaction.category,
         transaction.isHomePay ? "TRUE" : "FALSE",
         transaction.isMichiganPay ? "TRUE" : "FALSE",
+        transaction.isOhioPay ? "TRUE" : "FALSE",
         transaction.remarks,
     ];
 
@@ -123,6 +128,7 @@ export async function appendTransactions(accessToken: string, transactions: Tran
         transaction.category,
         transaction.isHomePay ? "TRUE" : "FALSE",
         transaction.isMichiganPay ? "TRUE" : "FALSE",
+        transaction.isOhioPay ? "TRUE" : "FALSE",
         transaction.remarks,
     ]);
 
@@ -161,11 +167,12 @@ export async function updateTransaction(accessToken: string, rowNumber: number, 
         transaction.category,
         transaction.isHomePay ? "TRUE" : "FALSE",
         transaction.isMichiganPay ? "TRUE" : "FALSE",
+        transaction.isOhioPay ? "TRUE" : "FALSE",
         transaction.remarks,
     ];
 
     const response = await fetch(
-        `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Raw Data!A${rowNumber}:F${rowNumber}?valueInputOption=USER_ENTERED`,
+        `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Raw Data!A${rowNumber}:G${rowNumber}?valueInputOption=USER_ENTERED`,
         {
             method: "PUT",
             headers: {
@@ -194,13 +201,14 @@ export async function batchUpdateTransactions(accessToken: string, transactions:
     }
 
     const data = transactions.map(t => ({
-        range: `Raw Data!A${t.rowNumber}:F${t.rowNumber}`,
+        range: `Raw Data!A${t.rowNumber}:G${t.rowNumber}`,
         values: [[
             t.date,
             t.amount.toString(),
             t.category,
             t.isHomePay ? "TRUE" : "FALSE",
             t.isMichiganPay ? "TRUE" : "FALSE",
+            t.isOhioPay ? "TRUE" : "FALSE",
             t.remarks,
         ]]
     }));
@@ -236,7 +244,7 @@ export async function deleteTransaction(accessToken: string, rowNumber: number) 
     }
 
     const response = await fetch(
-        `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Raw Data!A${rowNumber}:F${rowNumber}:clear`,
+        `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Raw Data!A${rowNumber}:G${rowNumber}:clear`,
         {
             method: "POST",
             headers: {
@@ -283,8 +291,9 @@ export async function fetchSettings(accessToken: string): Promise<Settings> {
         mileageTaxDeductionRate: 0.15,
         categories: [
             "Mileage", "Deposit", "Internet", "Power", "Phone",
-            "Liability Insurance", "Tools/Supplies", "Meals", "Lodging", "Fuel", "Other"
-        ]
+            "Liability Insurance", "Tools/Supplies", "Breakfast", "Lunch", "Dinner", "Lodging", "Fuel", "Other"
+        ],
+        netIncomeDeductions: ["Mileage Reimbursement", "Lodging"]
     };
 
     // Parse Key-Value pairs from the Settings!A:B tab
@@ -298,6 +307,9 @@ export async function fetchSettings(accessToken: string): Promise<Settings> {
         if (key === 'Categories') {
             // Split the comma-separated string back into an array, removing empty spaces
             settings.categories = val.split(',').map((c: string) => c.trim()).filter(Boolean);
+        }
+        if (key === 'NetIncomeDeductions') {
+            settings.netIncomeDeductions = val.split(',').map((c: string) => c.trim()).filter(Boolean);
         }
     });
 
@@ -316,7 +328,8 @@ export async function updateSettings(accessToken: string, settings: Settings) {
     const values = [
         ['MileageReimbursementRate', settings.mileageReimbursementRate],
         ['MileageTaxDeductionRate', settings.mileageTaxDeductionRate],
-        ['Categories', settings.categories.join(', ')]
+        ['Categories', settings.categories.join(', ')],
+        ['NetIncomeDeductions', settings.netIncomeDeductions.join(', ')]
     ];
 
     const response = await fetch(
@@ -374,8 +387,9 @@ export async function fetchScheduledTransactions(accessToken: string): Promise<S
         category: row[2] || "Uncategorized",
         isHomePay: row[3] === "TRUE" || row[3] === "Yes",
         isMichiganPay: row[4] === "TRUE" || row[4] === "Yes",
-        frequency: (row[5] as 'Weekly' | 'Monthly' | 'Yearly') || 'Monthly',
-        nextTriggerDate: row[6] || "",
+        isOhioPay: row[5] === "TRUE" || row[5] === "Yes",
+        frequency: (row[6] as 'Weekly' | 'Monthly' | 'Yearly') || 'Monthly',
+        nextTriggerDate: row[7] || "",
     }));
 }
 
@@ -391,6 +405,7 @@ export async function appendScheduledTransaction(accessToken: string, st: Schedu
         st.category,
         st.isHomePay ? "TRUE" : "FALSE",
         st.isMichiganPay ? "TRUE" : "FALSE",
+        st.isOhioPay ? "TRUE" : "FALSE",
         st.frequency,
         st.nextTriggerDate,
     ];
@@ -423,12 +438,13 @@ export async function updateScheduledTransaction(accessToken: string, rowNumber:
         st.category,
         st.isHomePay ? "TRUE" : "FALSE",
         st.isMichiganPay ? "TRUE" : "FALSE",
+        st.isOhioPay ? "TRUE" : "FALSE",
         st.frequency,
         st.nextTriggerDate,
     ];
 
     const response = await fetch(
-        `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Scheduled!A${rowNumber}:G${rowNumber}?valueInputOption=USER_ENTERED`,
+        `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Scheduled!A${rowNumber}:H${rowNumber}?valueInputOption=USER_ENTERED`,
         {
             method: "PUT",
             headers: {
@@ -450,7 +466,7 @@ export async function deleteScheduledTransaction(accessToken: string, rowNumber:
     if (!SPREADSHEET_ID) throw new Error("Spreadsheet ID not configured.");
 
     const response = await fetch(
-        `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Scheduled!A${rowNumber}:G${rowNumber}:clear`,
+        `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Scheduled!A${rowNumber}:H${rowNumber}:clear`,
         {
             method: "POST",
             headers: { Authorization: `Bearer ${accessToken}` }

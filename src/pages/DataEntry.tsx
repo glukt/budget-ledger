@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { useSettings } from '../lib/settingsContext';
 import { appendTransaction, appendTransactions } from '../lib/sheets';
@@ -15,6 +16,7 @@ import { CalendarClock, Plus, Trash2 } from 'lucide-react';
 export default function DataEntry() {
     const { accessToken } = useAuth();
     const { settings } = useSettings();
+    const location = useLocation();
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -29,16 +31,18 @@ export default function DataEntry() {
     const [subCategory, setSubCategory] = useState('');
     const [subIsHomePay, setSubIsHomePay] = useState(false);
     const [subIsMichiganPay, setSubIsMichiganPay] = useState(false);
+    const [subIsOhioPay, setSubIsOhioPay] = useState(false);
     const [subFrequency, setSubFrequency] = useState<'Weekly' | 'Monthly' | 'Yearly'>('Monthly');
     const [subNextDate, setSubNextDate] = useState('');
     const [subMngLoading, setSubMngLoading] = useState(false);
 
     const [formData, setFormData] = useState<Transaction>({
-        date: new Date().toISOString().split("T")[0],
+        date: location.state?.prefillDate || new Date().toISOString().split("T")[0],
         amount: 0,
-        category: "Mileage",
+        category: location.state?.prefillCategory || (settings.categories[0] || "Mileage"),
         isHomePay: false,
         isMichiganPay: false,
+        isOhioPay: false,
         remarks: "",
     });
 
@@ -93,6 +97,7 @@ export default function DataEntry() {
                     category: split.category,
                     isHomePay: formData.isHomePay,
                     isMichiganPay: formData.isMichiganPay,
+                    isOhioPay: formData.isOhioPay,
                     remarks: split.remarks || formData.remarks || "Split Transaction", // Fallback remarks
                 }));
 
@@ -131,6 +136,7 @@ export default function DataEntry() {
                 category: subCategory,
                 isHomePay: subIsHomePay,
                 isMichiganPay: subIsMichiganPay,
+                isOhioPay: subIsOhioPay,
                 frequency: subFrequency,
                 nextTriggerDate: subNextDate,
             };
@@ -143,6 +149,7 @@ export default function DataEntry() {
             setSubCategory('');
             setSubIsHomePay(false);
             setSubIsMichiganPay(false);
+            setSubIsOhioPay(false);
             setSubFrequency('Monthly');
             setSubNextDate('');
             setIsDialogOpen(false);
@@ -220,6 +227,9 @@ export default function DataEntry() {
                                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                     required
                                 >
+                                    {!settings.categories.includes(formData.category) && formData.category && (
+                                        <option value={formData.category}>{formData.category}</option>
+                                    )}
                                     {settings.categories.map((cat) => (
                                         <option key={cat} value={cat}>
                                             {cat}
@@ -325,7 +335,7 @@ export default function DataEntry() {
                             )}
                         </div>
 
-                        <div className="flex gap-6 py-4 border-t border-b mb-6">
+                        <div className="flex gap-5 py-4 border-t border-b mb-6">
                             <label className="flex items-center space-x-2">
                                 <input
                                     type="checkbox"
@@ -343,6 +353,15 @@ export default function DataEntry() {
                                     onChange={(e) => setFormData({ ...formData, isMichiganPay: e.target.checked })}
                                 />
                                 <span className="text-sm font-medium">Michigan Pay</span>
+                            </label>
+                            <label className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                                    checked={formData.isOhioPay}
+                                    onChange={(e) => setFormData({ ...formData, isOhioPay: e.target.checked })}
+                                />
+                                <span className="text-sm font-medium border-b-2 border-red-500/50 pb-0.5">Ohio Pay</span>
                             </label>
                         </div>
 
@@ -423,6 +442,10 @@ export default function DataEntry() {
                                     <label className="flex items-center space-x-2 text-sm">
                                         <input type="checkbox" checked={subIsMichiganPay} onChange={(e) => setSubIsMichiganPay(e.target.checked)} className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
                                         <span>MI Pay?</span>
+                                    </label>
+                                    <label className="flex items-center space-x-2 text-sm">
+                                        <input type="checkbox" checked={subIsOhioPay} onChange={(e) => setSubIsOhioPay(e.target.checked)} className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                                        <span className="border-b-2 border-red-500/50 pb-0.5">OH Pay?</span>
                                     </label>
                                 </div>
                             </div>

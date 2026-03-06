@@ -3,13 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { useSettings } from '../lib/settingsContext';
 import type { Transaction } from '../lib/sheets';
-import { fetchTransactions } from '../lib/sheets';
+import { fetchTransactions, appendTransaction } from '../lib/sheets';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
-import { Activity, DollarSign, Car, Briefcase, TrendingUp, Filter, HelpCircle } from 'lucide-react';
+import { Activity, DollarSign, Car, Briefcase, TrendingUp, Filter, HelpCircle, Plus } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { format } from 'date-fns';
 import Joyride, { STATUS } from 'react-joyride';
 import type { CallBackProps } from 'react-joyride';
+import { MonthlySummaryTable } from '../components/MonthlySummaryTable';
+import { Input } from '../components/ui/input';
+import { Button } from '../components/ui/button';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658'];
 const MONTHS = [
@@ -27,10 +30,19 @@ export default function Dashboard() {
     const navigate = useNavigate();
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState(true);
+    const [quickAddLoading, setQuickAddLoading] = useState(false);
 
     const [selectedYear, setSelectedYear] = useState<string>('All');
     const [selectedMonth, setSelectedMonth] = useState<string>('All');
     const [excludedCategories, setExcludedCategories] = useState<Set<string>>(new Set());
+
+    // Quick Add Form State
+    const [quickAddFormData, setQuickAddFormData] = useState<Partial<Transaction>>({
+        date: new Date().toISOString().split("T")[0],
+        amount: 0,
+        category: '',
+        remarks: ''
+    });
 
     // Tour State
     const [runTour, setRunTour] = useState(false);
@@ -99,6 +111,47 @@ export default function Dashboard() {
         e.stopPropagation();
         // Route to Audit Ledger and pre-fill both Category and Date filters to isolate the specific transaction
         navigate('/audit', { state: { filterCategory: cat, filterStartDate: date, filterEndDate: date } });
+    };
+
+    const handleAddExpense = (cat: string, month: string) => {
+        // Route to Data Entry prefilled
+        navigate('/log', { state: { prefillCategory: cat, prefillDate: `${month}-01` } });
+    };
+
+    const handleQuickAddSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!accessToken || !quickAddFormData.date || !quickAddFormData.amount || !quickAddFormData.category) return;
+
+        setQuickAddLoading(true);
+        try {
+            const newTransaction: Transaction = {
+                date: quickAddFormData.date,
+                amount: quickAddFormData.amount,
+                category: quickAddFormData.category,
+                isHomePay: false,
+                isMichiganPay: false,
+                isOhioPay: false,
+                remarks: quickAddFormData.remarks || ''
+            };
+
+            await appendTransaction(accessToken, newTransaction);
+
+            // Re-fetch transactions
+            const updatedData = await fetchTransactions(accessToken);
+            setTransactions(updatedData);
+
+            // Reset form but keep date
+            setQuickAddFormData(prev => ({
+                ...prev,
+                amount: 0,
+                remarks: ''
+            }));
+        } catch (err) {
+            console.error("Failed to quick add expense", err);
+            alert("Failed to log expense. Check console for details.");
+        } finally {
+            setQuickAddLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -177,10 +230,26 @@ export default function Dashboard() {
         const mileageReimbursement = mileageMilesLogged * settings.mileageReimbursementRate;
         const mileageTaxDeductible = mileageMilesLogged * settings.mileageTaxDeductionRate;
 
-        // As per the original Excel:
-        // Total Expenses = sum of all non-mileage, non-deposit rows
-        // Expenses after Reimbursement = Total Expenses - Reimbursement Total
+        // "Total Expenses" = sum of all non-mileage, non-deposit rows (already calculated via totalOpEx)
+        // "Expenses after Reimbursement" = Total Expenses - Reimbursement Total (historical metric)
         const expensesAfterReimbursement = totalOpEx - mileageReimbursement;
+
+        // Dynamic Net Income Calculation
+        // Gross Income - (Sum of Selected Deductions)
+        let totalDeductions = 0;
+        const activeDeductions = settings.netIncomeDeductions || ['Mileage Reimbursement', 'Lodging'];
+
+        if (activeDeductions.includes('Mileage Reimbursement')) {
+            totalDeductions += mileageReimbursement;
+        }
+
+        Object.entries(categoryTotals).forEach(([cat, total]) => {
+            if (activeDeductions.includes(cat) && cat !== 'Deposit' && cat !== 'Mileage') {
+                totalDeductions += total;
+            }
+        });
+
+        const netIncome = grossIncome - totalDeductions;
 
         const pieData = Object.entries(expenseBreakdown)
             .filter(([_, v]) => v > 0)
@@ -205,7 +274,7 @@ export default function Dashboard() {
             totalExpenses: totalOpEx,
             reimbursementTotal: mileageReimbursement,
             expensesAfterReimbursement,
-            netIncome: grossIncome - expensesAfterReimbursement,
+            netIncome,
             mileageStats: {
                 totalMiles: mileageMilesLogged,
                 reimbursedValue: mileageReimbursement,
@@ -336,41 +405,161 @@ export default function Dashboard() {
                 </Card>
             </div>
 
-            {metrics.monthlyTrend.length > 0 && (
-                <Card className="border shadow-sm mb-6">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <TrendingUp className="h-5 w-5 text-muted-foreground" />
-                            Income vs. Expenses Trend
+            {/* Quick Add Expense Row */}
+            <Card className="mb-6 shadow-sm border border-blue-100 bg-blue-50/10">
+                <CardContent className="p-4">
+                    <form onSubmit={handleQuickAddSubmit} className="flex flex-col sm:flex-row gap-3 items-end">
+                        <div className="space-y-1.5 flex-1 min-w-[120px]">
+                            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Date</label>
+                            <Input
+                                type="date"
+                                value={quickAddFormData.date}
+                                onChange={(e) => setQuickAddFormData({ ...quickAddFormData, date: e.target.value })}
+                                required
+                                className="h-9 bg-background"
+                            />
+                        </div>
+                        <div className="space-y-1.5 flex-1 min-w-[120px]">
+                            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Amount ($)</label>
+                            <Input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={quickAddFormData.amount || ""}
+                                onChange={(e) => setQuickAddFormData({ ...quickAddFormData, amount: parseFloat(e.target.value) || 0 })}
+                                required
+                                placeholder="0.00"
+                                className="h-9 bg-background"
+                            />
+                        </div>
+                        <div className="space-y-1.5 flex-[1.5] min-w-[150px]">
+                            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category</label>
+                            <select
+                                className="flex w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-9"
+                                value={quickAddFormData.category}
+                                onChange={(e) => setQuickAddFormData({ ...quickAddFormData, category: e.target.value })}
+                                required
+                            >
+                                <option value="" disabled>Select...</option>
+                                {settings.categories.map((cat) => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="space-y-1.5 flex-[2] min-w-[150px]">
+                            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Remarks (Opt)</label>
+                            <Input
+                                type="text"
+                                value={quickAddFormData.remarks}
+                                onChange={(e) => setQuickAddFormData({ ...quickAddFormData, remarks: e.target.value })}
+                                placeholder="Client, location, etc."
+                                className="h-9 bg-background"
+                            />
+                        </div>
+                        <Button type="submit" disabled={quickAddLoading} className="h-9 shrink-0 gap-1 mt-auto whitespace-nowrap px-4 bg-blue-600 hover:bg-blue-700">
+                            <Plus className="h-4 w-4" />
+                            {quickAddLoading ? "Saving..." : "Quick Add"}
+                        </Button>
+                    </form>
+                </CardContent>
+            </Card>
+
+            {/* Side-by-Side Category Totals and Pivot Table */}
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 mb-6">
+
+                {/* Vertical Category Totals (Excel Col K) */}
+                <Card className="col-span-1 border shadow-sm flex flex-col xl:h-[600px]">
+                    <CardHeader className="bg-muted/30 pb-4 border-b">
+                        <CardTitle className="flex items-center gap-2 text-lg">
+                            <Filter className="h-5 w-5 text-gray-500" />
+                            Category Totals
                         </CardTitle>
-                        <CardDescription>Monthly comparison of gross income and operating expenses</CardDescription>
+                        <CardDescription>Filter metrics by category</CardDescription>
                     </CardHeader>
-                    <CardContent className="h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={metrics.monthlyTrend} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} />
-                                <YAxis
-                                    axisLine={false}
-                                    tickLine={false}
-                                    tick={{ fontSize: 12, fill: '#6B7280' }}
-                                    tickFormatter={(val) => `$${val.toLocaleString()}`}
-                                />
-                                <RechartsTooltip
-                                    formatter={(value: any) => `$${Number(value).toFixed(2)}`}
-                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                    cursor={{ fill: '#F3F4F6' }}
-                                />
-                                <Legend verticalAlign="top" height={36} iconType="circle" />
-                                <Bar dataKey="income" name="Income" fill="#10B981" radius={[4, 4, 0, 0]} barSize={32} />
-                                <Bar dataKey="expense" name="Expenses" fill="#F43F5E" radius={[4, 4, 0, 0]} barSize={32} />
-                            </BarChart>
-                        </ResponsiveContainer>
+                    <CardContent className="flex-1 overflow-auto p-4">
+                        <div className="space-y-2 pr-1">
+                            {metrics.categoryTotalsList.map((cat, i) => (
+                                <div
+                                    key={i}
+                                    className={`flex items-center justify-between p-2 rounded-lg bg-gray-50/50 border transition-colors hover:bg-gray-50 cursor-pointer ${settings.categories.includes(cat.name) ? 'border-gray-100' : 'border-red-200 bg-red-50/30'}`}
+                                    onClick={(e) => jumpToLedger(e, cat.name)}
+                                    onContextMenu={(e) => jumpToLedger(e, cat.name)}
+                                    title={!settings.categories.includes(cat.name) ? `Click or Right-Click to view all ${cat.name} transactions. (Note: This custom transaction category is not currently present in your active Category List Settings)` : `Click or Right-Click to view all ${cat.name} transactions`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            type="checkbox"
+                                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                                            checked={!excludedCategories.has(cat.name)}
+                                            onChange={(e) => toggleCategory(e as any, cat.name)}
+                                            onClick={(e) => e.stopPropagation()}
+                                        />
+                                        <span className={`text-sm font-medium hover:text-blue-600 hover:underline ${excludedCategories.has(cat.name) ? 'text-muted-foreground line-through' : 'text-foreground'}`}>{cat.name}</span>
+                                    </div>
+                                    <div className={`font-semibold tabular-nums text-sm ${excludedCategories.has(cat.name) ? 'text-muted-foreground' : 'text-foreground'}`}>
+                                        {cat.name === 'Mileage'
+                                            ? `${cat.total.toLocaleString()} mi`
+                                            : `$${cat.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </CardContent>
                 </Card>
-            )}
 
-            <div className="grid gap-6 lg:grid-cols-3 md:grid-cols-2">
+                {/* Pivot Table (Excel Cols N-T) */}
+                <div className="col-span-1 xl:col-span-3">
+                    {
+                        transactions.length > 0 ? (
+                            <div className="tour-pivot h-full xl:h-[600px] flex flex-col">
+                                <MonthlySummaryTable transactions={transactions} categories={settings.categories} onCellClick={handleAddExpense} />
+                            </div>
+                        ) : (
+                            <Card className="border shadow-sm flex flex-col h-full min-h-[300px] items-center justify-center text-muted-foreground">
+                                No data available to generate Pivot Table.
+                            </Card>
+                        )
+                    }
+                </div>
+            </div>
+
+            {
+                metrics.monthlyTrend.length > 0 && (
+                    <Card className="border shadow-sm mb-6">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <TrendingUp className="h-5 w-5 text-muted-foreground" />
+                                Income vs. Expenses Trend
+                            </CardTitle>
+                            <CardDescription>Monthly comparison of gross income and operating expenses</CardDescription>
+                        </CardHeader>
+                        <CardContent className="h-[300px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={metrics.monthlyTrend} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} />
+                                    <YAxis
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{ fontSize: 12, fill: '#6B7280' }}
+                                        tickFormatter={(val) => `$${val.toLocaleString()}`}
+                                    />
+                                    <RechartsTooltip
+                                        formatter={(value: any) => `$${Number(value).toFixed(2)}`}
+                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                        cursor={{ fill: '#F3F4F6' }}
+                                    />
+                                    <Legend verticalAlign="top" height={36} iconType="circle" />
+                                    <Bar dataKey="income" name="Income" fill="#10B981" radius={[4, 4, 0, 0]} barSize={32} />
+                                    <Bar dataKey="expense" name="Expenses" fill="#F43F5E" radius={[4, 4, 0, 0]} barSize={32} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </CardContent>
+                    </Card>
+                )
+            }
+
+            <div className="grid gap-6 lg:grid-cols-2">
                 <Card className="tour-overhead col-span-1 border shadow-sm">
                     <CardHeader>
                         <CardTitle>Overhead Breakdown</CardTitle>
@@ -451,45 +640,6 @@ export default function Dashboard() {
                                 No expenses to list.
                             </div>
                         )}
-                    </CardContent>
-                </Card>
-
-                <Card className="col-span-1 border shadow-sm flex flex-col">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Filter className="h-5 w-5 text-gray-500" />
-                            Category Totals
-                        </CardTitle>
-                        <CardDescription>Filter metrics by category</CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex-1 overflow-auto max-h-[320px]">
-                        <div className="space-y-2 pr-1">
-                            {metrics.categoryTotalsList.map((cat, i) => (
-                                <div
-                                    key={i}
-                                    className={`flex items-center justify-between p-2 rounded-lg bg-gray-50/50 border transition-colors hover:bg-gray-50 cursor-pointer ${settings.categories.includes(cat.name) ? 'border-gray-100' : 'border-red-200 bg-red-50/30'}`}
-                                    onClick={(e) => jumpToLedger(e, cat.name)}
-                                    onContextMenu={(e) => jumpToLedger(e, cat.name)}
-                                    title={!settings.categories.includes(cat.name) ? `Click or Right-Click to view all ${cat.name} transactions. (Note: This custom transaction category is not currently present in your active Category List Settings)` : `Click or Right-Click to view all ${cat.name} transactions`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <input
-                                            type="checkbox"
-                                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
-                                            checked={!excludedCategories.has(cat.name)}
-                                            onChange={(e) => toggleCategory(e as any, cat.name)}
-                                            onClick={(e) => e.stopPropagation()}
-                                        />
-                                        <span className={`text-sm font-medium hover:text-blue-600 hover:underline ${excludedCategories.has(cat.name) ? 'text-muted-foreground line-through' : 'text-foreground'}`}>{cat.name}</span>
-                                    </div>
-                                    <div className={`font-semibold tabular-nums text-sm ${excludedCategories.has(cat.name) ? 'text-muted-foreground' : 'text-foreground'}`}>
-                                        {cat.name === 'Mileage'
-                                            ? `${cat.total.toLocaleString()} mi`
-                                            : `$${cat.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
                     </CardContent>
                 </Card>
             </div>

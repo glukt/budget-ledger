@@ -18,6 +18,9 @@ const CATEGORY_COLORS: Record<string, string> = {
     "Phone": "border-l-purple-500",
     "Liability Insurance": "border-l-rose-500",
     "Tools/Supplies": "border-l-orange-500",
+    "Breakfast": "border-l-red-300",
+    "Lunch": "border-l-red-400",
+    "Dinner": "border-l-red-600",
     "Meals": "border-l-red-400",
     "Lodging": "border-l-teal-500",
     "Fuel": "border-l-cyan-500",
@@ -38,6 +41,7 @@ const FALLBACK_COLORS = [
 ];
 
 const getCategoryBorderColor = (category: string) => {
+    if (!category) return FALLBACK_COLORS[0];
     if (CATEGORY_COLORS[category]) return CATEGORY_COLORS[category];
     let hash = 0;
     for (let i = 0; i < category.length; i++) {
@@ -62,6 +66,7 @@ export default function AuditLedger() {
     const [endDate, setEndDate] = useState<string>(location.state?.filterEndDate || '');
     const [filterMI, setFilterMI] = useState<boolean>(false);
     const [filterHome, setFilterHome] = useState<boolean>(false);
+    const [filterOH, setFilterOH] = useState<boolean>(false);
 
     // Modal & Bulk State
     const [editingTx, setEditingTx] = useState<Transaction | null>(null);
@@ -178,13 +183,14 @@ export default function AuditLedger() {
             if (startDate && t.date < startDate) return false;
             if (endDate && t.date > endDate) return false;
 
-            // MI / Home Filters
+            // MI / Home / OH Filters
             if (filterMI && !t.isMichiganPay) return false;
             if (filterHome && !t.isHomePay) return false;
+            if (filterOH && !t.isOhioPay) return false;
 
             return true;
         });
-    }, [transactions, selectedCategory, startDate, endDate, filterMI, filterHome]);
+    }, [transactions, selectedCategory, startDate, endDate, filterMI, filterHome, filterOH]);
 
     const allVisibleSelected = filteredTransactions.length > 0 &&
         filteredTransactions.every(t => t.rowNumber !== undefined && selectedRows.includes(t.rowNumber));
@@ -236,6 +242,15 @@ export default function AuditLedger() {
                                 onChange={(e) => setFilterMI(e.target.checked)}
                             />
                             <span>MI Only</span>
+                        </label>
+                        <label className="flex items-center space-x-2 text-sm cursor-pointer">
+                            <input
+                                type="checkbox"
+                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4 bg-background"
+                                checked={filterOH}
+                                onChange={(e) => setFilterOH(e.target.checked)}
+                            />
+                            <span>OH Only</span>
                         </label>
                         <label className="flex items-center space-x-2 text-sm cursor-pointer">
                             <input
@@ -344,6 +359,7 @@ export default function AuditLedger() {
                                         <td className="px-4 py-3 hidden md:table-cell space-x-1">
                                             {t.isHomePay && <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10 mb-1">Home</span>}
                                             {t.isMichiganPay && <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">MI</span>}
+                                            {t.isOhioPay && <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20">OH</span>}
                                         </td>
                                         <td className="px-4 py-3 text-muted-foreground truncate max-w-[150px] sm:max-w-[200px]">
                                             {t.remarks || "-"}
@@ -411,6 +427,9 @@ export default function AuditLedger() {
                                         required
                                     >
                                         <option value="Uncategorized">Uncategorized</option>
+                                        {!settings.categories.includes(editingTx.category) && editingTx.category !== 'Uncategorized' && (
+                                            <option value={editingTx.category}>{editingTx.category}</option>
+                                        )}
                                         {settings.categories.map((cat) => (
                                             <option key={cat} value={cat}>
                                                 {cat}
@@ -428,7 +447,7 @@ export default function AuditLedger() {
                                     />
                                 </div>
 
-                                <div className="flex gap-6 py-2 border-t pt-4">
+                                <div className="flex gap-4 py-2 border-t pt-4 flex-wrap">
                                     <label className="flex items-center space-x-2">
                                         <input
                                             type="checkbox"
@@ -446,6 +465,15 @@ export default function AuditLedger() {
                                             onChange={(e) => setEditingTx({ ...editingTx, isMichiganPay: e.target.checked })}
                                         />
                                         <span className="text-sm font-medium">Michigan Pay</span>
+                                    </label>
+                                    <label className="flex items-center space-x-2">
+                                        <input
+                                            type="checkbox"
+                                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                                            checked={editingTx.isOhioPay}
+                                            onChange={(e) => setEditingTx({ ...editingTx, isOhioPay: e.target.checked })}
+                                        />
+                                        <span className="text-sm font-medium border-b-2 border-red-500/50 pb-0.5">Ohio Pay</span>
                                     </label>
                                 </div>
                             </form>

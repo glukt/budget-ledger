@@ -275,6 +275,7 @@ export default function Dashboard() {
             reimbursementTotal: mileageReimbursement,
             expensesAfterReimbursement,
             netIncome,
+            netIncomeDeductionsTotal: totalDeductions,
             mileageStats: {
                 totalMiles: mileageMilesLogged,
                 reimbursedValue: mileageReimbursement,
@@ -353,6 +354,9 @@ export default function Dashboard() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">${metrics.grossIncome.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+                        <p className="text-xs text-muted-foreground pt-1 border-t mt-2">
+                            Sum of all Deposits
+                        </p>
                     </CardContent>
                 </Card>
 
@@ -384,6 +388,10 @@ export default function Dashboard() {
                         <div className={`text-3xl font-bold ${metrics.netIncome >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                             ${metrics.netIncome.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                         </div>
+                        <p className="text-xs text-slate-400 pt-1 border-t border-slate-700 mt-2 flex justify-between">
+                            <span>Gross: ${metrics.grossIncome.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                            <span>- Deductions: ${metrics.netIncomeDeductionsTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                        </p>
                     </CardContent>
                 </Card>
 
